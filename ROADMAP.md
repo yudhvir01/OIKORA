@@ -9,7 +9,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 
 ## Phase 1 — Foundation (Weeks 1-4)
 - [x] Auth: credentials-based login/logout with NextAuth, session handling
-- [ ] User roles (Admin/Staff) and route protection middleware
+- [x] User roles (Admin/Staff) and route protection middleware
 - [ ] Base layout: nav, sidebar, empty dashboard shell
 - [ ] Category model + CRUD (API routes + UI)
 - [ ] Product model + CRUD (SKU, name, category, unit, reorder point)
