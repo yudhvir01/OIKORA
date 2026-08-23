@@ -11,7 +11,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Auth: credentials-based login/logout with NextAuth, session handling
 - [x] User roles (Admin/Staff) and route protection middleware
 - [x] Base layout: nav, sidebar, empty dashboard shell
-- [ ] Category model + CRUD (API routes + UI)
+- [x] Category model + CRUD (API routes + UI)
 - [ ] Product model + CRUD (SKU, name, category, unit, reorder point)
 - [ ] Product list view with search/filter/pagination
 - [ ] Seed script for demo data

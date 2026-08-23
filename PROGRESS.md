@@ -6,6 +6,8 @@ scheduled build process. Newest entries at the top.
 Project start date: 2026-08-22
 Target completion: ~4 months from start date (~2026-12-22)
 
+- 2026-08-23: Added the `Category` model + migration (`name` unique, optional `description`), REST API routes (`GET`/`POST /api/categories`, `PATCH`/`DELETE /api/categories/[id]`, each requiring an authenticated session), and a `/dashboard/categories` CRUD screen (`CategoryManager` client component) supporting create, inline edit, and delete. Completes the Phase 1 category item.
+
 - 2026-08-23: Added the dashboard shell: a `/dashboard` route with its own layout, a `Sidebar` component (Dashboard link active, other future modules listed but disabled with a "Soon" badge), and an empty dashboard page with placeholder stat cards (Total Products, Low Stock Items, Categories, Locations). The root `/` route now redirects to `/dashboard`. Completes the Phase 1 base layout item.
 
 - 2026-08-22: Added login page, login/logout server actions, and a session-aware nav bar (`SiteNav`, `LoginForm`, `LogoutButton`) wired into the root layout. Completes the Phase 1 auth item.
