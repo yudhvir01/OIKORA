@@ -24,4 +24,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-24: Added the `Location` model (`name` unique, optional `address`) + migration, REST API routes (`GET`/`POST /api/locations`, `PATCH`/`DELETE /api/locations/[id]`), and a `/dashboard/locations` CRUD screen (`LocationManager`), each requiring an authenticated session. Enabled the "Locations" sidebar link. Starts and completes the Phase 2 location/warehouse model item.
 
+- 2026-08-24: Added the `StockLevel` model (quantity per product x location, unique on `[productId, locationId]`) + migration and foreign keys to `Product`/`Location`, plus a read-only `GET /api/stock-levels` route (optionally filtered by `productId`/`locationId`) for an authenticated session. Quantity mutations are intentionally left to the upcoming stock-in/stock-out/transfer transaction flows rather than direct CRUD. Completes the Phase 2 StockLevel model item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
