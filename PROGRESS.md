@@ -18,4 +18,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-24: Added the `Product` model (`sku` unique, `name`, `unit`, `reorderPoint` defaulting to 0, required `Category` relation) + migration, and REST API routes (`GET`/`POST /api/products` with search/category filter/pagination on GET, `PATCH`/`DELETE /api/products/[id]`), each requiring an authenticated session and validating the referenced category exists. Completes the Phase 1 product model item.
 
+- 2026-08-24: Added the `/dashboard/products` list view (`ProductList` client component) with a debounced name/SKU search box, a category filter dropdown, and page-based pagination against `GET /api/products`. Enabled the "Products" sidebar link. Completes the Phase 1 product list view item.
+
 <!-- New entries are appended above this line by the daily build routine. -->

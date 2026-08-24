@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", available: true },
-  { href: "/dashboard/products", label: "Products", available: false },
+  { href: "/dashboard/products", label: "Products", available: true },
   { href: "/dashboard/categories", label: "Categories", available: true },
   { href: "/dashboard/stock", label: "Stock", available: false },
   { href: "/dashboard/suppliers", label: "Suppliers", available: false },

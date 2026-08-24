@@ -13,7 +13,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Base layout: nav, sidebar, empty dashboard shell
 - [x] Category model + CRUD (API routes + UI)
 - [x] Product model + CRUD (SKU, name, category, unit, reorder point)
-- [ ] Product list view with search/filter/pagination
+- [x] Product list view with search/filter/pagination
 - [ ] Seed script for demo data
 
 ## Phase 2 — Core Operations (Weeks 5-8)
