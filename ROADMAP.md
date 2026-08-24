@@ -17,7 +17,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Seed script for demo data
 
 ## Phase 2 — Core Operations (Weeks 5-8)
-- [ ] Location/warehouse model (support multiple locations)
+- [x] Location/warehouse model (support multiple locations)
 - [ ] StockLevel model (product x location quantities)
 - [ ] Stock-in transaction flow (receive stock, updates StockLevel)
 - [ ] Stock-out transaction flow (issue/consume stock)

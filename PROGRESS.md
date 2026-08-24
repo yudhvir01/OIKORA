@@ -22,4 +22,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-24: Added `prisma/seed.ts`, wired up via `migrations.seed` in `prisma.config.ts` (run with `npm run db:seed` / `prisma db seed`, executed by `tsx`). Upserts two demo users (admin/staff), 4 categories, and 8 products so a fresh database has usable data. Completes the Phase 1 seed script item.
 
+- 2026-08-24: Added the `Location` model (`name` unique, optional `address`) + migration, REST API routes (`GET`/`POST /api/locations`, `PATCH`/`DELETE /api/locations/[id]`), and a `/dashboard/locations` CRUD screen (`LocationManager`), each requiring an authenticated session. Enabled the "Locations" sidebar link. Starts and completes the Phase 2 location/warehouse model item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
