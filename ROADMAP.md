@@ -12,7 +12,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] User roles (Admin/Staff) and route protection middleware
 - [x] Base layout: nav, sidebar, empty dashboard shell
 - [x] Category model + CRUD (API routes + UI)
-- [ ] Product model + CRUD (SKU, name, category, unit, reorder point)
+- [x] Product model + CRUD (SKU, name, category, unit, reorder point)
 - [ ] Product list view with search/filter/pagination
 - [ ] Seed script for demo data
 

@@ -16,4 +16,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-22: Added `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts`) wrapping `auth()` for route protection: unauthenticated requests to non-public routes redirect to `/login` with a `callbackUrl`, authenticated users are redirected away from `/login`, and a reserved `/admin` prefix redirects non-ADMIN users back to `/`. Verified with `npm run build`.
 
+- 2026-08-24: Added the `Product` model (`sku` unique, `name`, `unit`, `reorderPoint` defaulting to 0, required `Category` relation) + migration, and REST API routes (`GET`/`POST /api/products` with search/category filter/pagination on GET, `PATCH`/`DELETE /api/products/[id]`), each requiring an authenticated session and validating the referenced category exists. Completes the Phase 1 product model item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
