@@ -14,7 +14,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Category model + CRUD (API routes + UI)
 - [x] Product model + CRUD (SKU, name, category, unit, reorder point)
 - [x] Product list view with search/filter/pagination
-- [ ] Seed script for demo data
+- [x] Seed script for demo data
 
 ## Phase 2 — Core Operations (Weeks 5-8)
 - [ ] Location/warehouse model (support multiple locations)

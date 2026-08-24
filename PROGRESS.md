@@ -20,4 +20,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-24: Added the `/dashboard/products` list view (`ProductList` client component) with a debounced name/SKU search box, a category filter dropdown, and page-based pagination against `GET /api/products`. Enabled the "Products" sidebar link. Completes the Phase 1 product list view item.
 
+- 2026-08-24: Added `prisma/seed.ts`, wired up via `migrations.seed` in `prisma.config.ts` (run with `npm run db:seed` / `prisma db seed`, executed by `tsx`). Upserts two demo users (admin/staff), 4 categories, and 8 products so a fresh database has usable data. Completes the Phase 1 seed script item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
