@@ -5,7 +5,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/products", label: "Products", available: true },
   { href: "/dashboard/categories", label: "Categories", available: true },
   { href: "/dashboard/locations", label: "Locations", available: true },
-  { href: "/dashboard/stock", label: "Stock", available: false },
+  { href: "/dashboard/stock", label: "Stock", available: true },
   { href: "/dashboard/suppliers", label: "Suppliers", available: false },
 ] as const;
 

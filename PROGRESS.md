@@ -28,4 +28,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-25: Added the `StockTransaction` model (`type` enum `STOCK_IN`/`STOCK_OUT`/`TRANSFER_IN`/`TRANSFER_OUT`, `quantity`, `product`/`location`/`createdBy` relations, `note`) + migration, and `GET`/`POST /api/stock-in` routes: `POST` validates the product/location exist and quantity is a positive integer, then atomically upserts the matching `StockLevel` (incrementing existing quantity) and records a `STOCK_IN` transaction in a single `$transaction`. `GET` lists recent stock-in transactions, optionally filtered by product/location. UI for this flow is not built yet, so the Phase 2 stock-in roadmap item stays unchecked.
 
+- 2026-08-25: Added the `/dashboard/stock` screen (`StockInManager` client component): a receive-stock form (product/location selects, quantity, optional note) posting to `/api/stock-in`, a live-updating current stock levels table, and a recent stock-in transactions table (last 10). Enabled the "Stock" sidebar link. Completes the Phase 2 stock-in transaction flow item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
