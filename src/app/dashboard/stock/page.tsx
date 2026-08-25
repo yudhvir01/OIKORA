@@ -1,4 +1,4 @@
-import { StockInManager } from "@/components/stock-in-manager";
+import { StockManager } from "@/components/stock-manager";
 import { prisma } from "@/lib/prisma";
 
 export default async function StockPage() {
@@ -19,7 +19,7 @@ export default async function StockPage() {
       orderBy: [{ product: { name: "asc" } }, { location: { name: "asc" } }],
     }),
     prisma.stockTransaction.findMany({
-      where: { type: "STOCK_IN" },
+      where: { type: { in: ["STOCK_IN", "STOCK_OUT"] } },
       include: {
         product: { select: { id: true, sku: true, name: true } },
         location: { select: { id: true, name: true } },
@@ -35,7 +35,7 @@ export default async function StockPage() {
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
         Stock
       </h1>
-      <StockInManager
+      <StockManager
         products={products}
         locations={locations}
         initialStockLevels={stockLevels}

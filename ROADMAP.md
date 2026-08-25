@@ -20,7 +20,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Location/warehouse model (support multiple locations)
 - [x] StockLevel model (product x location quantities)
 - [x] Stock-in transaction flow (receive stock, updates StockLevel)
-- [ ] Stock-out transaction flow (issue/consume stock)
+- [x] Stock-out transaction flow (issue/consume stock)
 - [ ] Stock transfer between locations
 - [ ] Transaction history/audit log per product
 - [ ] Low-stock indicator on product list (below reorder point)

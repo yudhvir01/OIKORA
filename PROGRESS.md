@@ -30,4 +30,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-25: Added the `/dashboard/stock` screen (`StockInManager` client component): a receive-stock form (product/location selects, quantity, optional note) posting to `/api/stock-in`, a live-updating current stock levels table, and a recent stock-in transactions table (last 10). Enabled the "Stock" sidebar link. Completes the Phase 2 stock-in transaction flow item.
 
+- 2026-08-25: Added `GET`/`POST /api/stock-out` routes: `POST` atomically decrements the matching `StockLevel` with a conditional `updateMany` (`WHERE quantity >= requested`, race-safe under concurrent requests) and records a `STOCK_OUT` transaction, returning 409 with the available quantity when stock is insufficient. Replaced `StockInManager` with a combined `StockManager` component on `/dashboard/stock` offering side-by-side "Receive stock" and "Issue stock" forms, a shared current stock levels table, and a merged recent-movements table (in/out) sourced from both transaction types. Completes the Phase 2 stock-out roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
