@@ -26,4 +26,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-24: Added the `StockLevel` model (quantity per product x location, unique on `[productId, locationId]`) + migration and foreign keys to `Product`/`Location`, plus a read-only `GET /api/stock-levels` route (optionally filtered by `productId`/`locationId`) for an authenticated session. Quantity mutations are intentionally left to the upcoming stock-in/stock-out/transfer transaction flows rather than direct CRUD. Completes the Phase 2 StockLevel model item.
 
+- 2026-08-25: Added the `StockTransaction` model (`type` enum `STOCK_IN`/`STOCK_OUT`/`TRANSFER_IN`/`TRANSFER_OUT`, `quantity`, `product`/`location`/`createdBy` relations, `note`) + migration, and `GET`/`POST /api/stock-in` routes: `POST` validates the product/location exist and quantity is a positive integer, then atomically upserts the matching `StockLevel` (incrementing existing quantity) and records a `STOCK_IN` transaction in a single `$transaction`. `GET` lists recent stock-in transactions, optionally filtered by product/location. UI for this flow is not built yet, so the Phase 2 stock-in roadmap item stays unchecked.
+
 <!-- New entries are appended above this line by the daily build routine. -->
