@@ -22,7 +22,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Stock-in transaction flow (receive stock, updates StockLevel)
 - [x] Stock-out transaction flow (issue/consume stock)
 - [x] Stock transfer between locations
-- [ ] Transaction history/audit log per product
+- [x] Transaction history/audit log per product
 - [ ] Low-stock indicator on product list (below reorder point)
 
 ## Phase 3 — Suppliers, Orders & Alerts (Weeks 9-13)

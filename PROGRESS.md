@@ -34,4 +34,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-26: Added `GET`/`POST /api/stock-transfer` routes (the `StockTransactionType` enum already had `TRANSFER_IN`/`TRANSFER_OUT`, so no migration was needed): `POST` atomically decrements the source location's `StockLevel` with a race-safe conditional `updateMany` (returning 409 with the available quantity on insufficient stock), increments the destination location's `StockLevel` (upserting if new), and records a paired `TRANSFER_OUT`/`TRANSFER_IN` transaction, all in one `$transaction`. Added a "Transfer stock" form to `StockManager` (product + from/to location selects) and merged transfer transactions into the recent-movements table. Completes the Phase 2 stock transfer roadmap item.
 
+- 2026-08-26: Added a `/dashboard/products/[id]` product detail page (stock-by-location breakdown, total quantity, reorder point) and a paginated `GET /api/products/[id]/transactions` route backing a new `ProductTransactionHistory` component that lists every stock movement (in/out/transfer) for that product, newest first. Product names in the products list now link to this detail page. Completes the Phase 2 transaction history/audit log roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Product = {
@@ -137,7 +138,14 @@ export function ProductList({ categories }: { categories: Category[] }) {
                 className="border-b border-zinc-100 dark:border-zinc-900"
               >
                 <td className="py-2 pr-2 font-mono text-xs">{product.sku}</td>
-                <td className="py-2 pr-2">{product.name}</td>
+                <td className="py-2 pr-2">
+                  <Link
+                    href={`/dashboard/products/${product.id}`}
+                    className="hover:underline"
+                  >
+                    {product.name}
+                  </Link>
+                </td>
                 <td className="py-2 pr-2 text-zinc-500 dark:text-zinc-400">
                   {product.category.name}
                 </td>
