@@ -19,7 +19,6 @@ export default async function StockPage() {
       orderBy: [{ product: { name: "asc" } }, { location: { name: "asc" } }],
     }),
     prisma.stockTransaction.findMany({
-      where: { type: { in: ["STOCK_IN", "STOCK_OUT"] } },
       include: {
         product: { select: { id: true, sku: true, name: true } },
         location: { select: { id: true, name: true } },

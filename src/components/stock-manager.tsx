@@ -173,6 +173,170 @@ function MovementForm({
   );
 }
 
+function TransferForm({
+  products,
+  locations,
+  disabled,
+  onSuccess,
+}: {
+  products: Product[];
+  locations: Location[];
+  disabled: boolean;
+  onSuccess: (data: {
+    fromStockLevel: StockLevel;
+    toStockLevel: StockLevel;
+    transferOut: Transaction;
+    transferIn: Transaction;
+  }) => void;
+}) {
+  const [productId, setProductId] = useState(products[0]?.id ?? "");
+  const [fromLocationId, setFromLocationId] = useState(locations[0]?.id ?? "");
+  const [toLocationId, setToLocationId] = useState(locations[1]?.id ?? "");
+  const [quantity, setQuantity] = useState("");
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    const parsedQuantity = Number(quantity);
+    if (!productId || !fromLocationId || !toLocationId) {
+      setError("Select a product and both locations");
+      return;
+    }
+    if (fromLocationId === toLocationId) {
+      setError("Source and destination locations must be different");
+      return;
+    }
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) {
+      setError("Quantity must be a positive whole number");
+      return;
+    }
+
+    setPending(true);
+    try {
+      const res = await fetch("/api/stock-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          fromLocationId,
+          toLocationId,
+          quantity: parsedQuantity,
+          note,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Failed to transfer stock");
+        return;
+      }
+      onSuccess(data);
+      setQuantity("");
+      setNote("");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-1 flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+    >
+      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        Transfer stock
+      </h2>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="transfer-product" className="text-sm font-medium">
+          Product
+        </label>
+        <select
+          id="transfer-product"
+          value={productId}
+          onChange={(e) => setProductId(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} ({p.sku})
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="transfer-from" className="text-sm font-medium">
+          From location
+        </label>
+        <select
+          id="transfer-from"
+          value={fromLocationId}
+          onChange={(e) => setFromLocationId(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          {locations.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="transfer-to" className="text-sm font-medium">
+          To location
+        </label>
+        <select
+          id="transfer-to"
+          value={toLocationId}
+          onChange={(e) => setToLocationId(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          {locations.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="transfer-quantity" className="text-sm font-medium">
+          Quantity
+        </label>
+        <input
+          id="transfer-quantity"
+          type="number"
+          min={1}
+          required
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="transfer-note" className="text-sm font-medium">
+          Note (optional)
+        </label>
+        <input
+          id="transfer-note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        />
+      </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      <button
+        type="submit"
+        disabled={pending || disabled || locations.length < 2}
+        className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+      >
+        Transfer stock
+      </button>
+    </form>
+  );
+}
+
 export function StockManager({
   products,
   locations,
@@ -187,24 +351,50 @@ export function StockManager({
   const [stockLevels, setStockLevels] = useState(initialStockLevels);
   const [transactions, setTransactions] = useState(initialTransactions);
 
+  function upsertStockLevel(prev: StockLevel[], updated: StockLevel) {
+    const idx = prev.findIndex((s) => s.id === updated.id);
+    if (idx === -1) {
+      return [...prev, updated].sort(
+        (a, b) =>
+          a.product.name.localeCompare(b.product.name) ||
+          a.location.name.localeCompare(b.location.name),
+      );
+    }
+    return prev.map((s) => (s.id === updated.id ? updated : s));
+  }
+
   function applyResult(data: { stockLevel: StockLevel; transaction: Transaction }) {
-    setStockLevels((prev) => {
-      const idx = prev.findIndex((s) => s.id === data.stockLevel.id);
-      const updated: StockLevel = {
+    setStockLevels((prev) =>
+      upsertStockLevel(prev, {
         ...data.stockLevel,
         product: data.transaction.product,
         location: data.transaction.location,
-      };
-      if (idx === -1) {
-        return [...prev, updated].sort(
-          (a, b) =>
-            a.product.name.localeCompare(b.product.name) ||
-            a.location.name.localeCompare(b.location.name),
-        );
-      }
-      return prev.map((s) => (s.id === updated.id ? updated : s));
-    });
+      }),
+    );
     setTransactions((prev) => [data.transaction, ...prev].slice(0, 10));
+  }
+
+  function applyTransferResult(data: {
+    fromStockLevel: StockLevel;
+    toStockLevel: StockLevel;
+    transferOut: Transaction;
+    transferIn: Transaction;
+  }) {
+    setStockLevels((prev) => {
+      const withFrom = upsertStockLevel(prev, {
+        ...data.fromStockLevel,
+        product: data.transferOut.product,
+        location: data.transferOut.location,
+      });
+      return upsertStockLevel(withFrom, {
+        ...data.toStockLevel,
+        product: data.transferIn.product,
+        location: data.transferIn.location,
+      });
+    });
+    setTransactions((prev) =>
+      [data.transferOut, data.transferIn, ...prev].slice(0, 10),
+    );
   }
 
   const disabled = products.length === 0 || locations.length === 0;
@@ -236,6 +426,12 @@ export function StockManager({
           locations={locations}
           disabled={disabled}
           onSuccess={applyResult}
+        />
+        <TransferForm
+          products={products}
+          locations={locations}
+          disabled={disabled}
+          onSuccess={applyTransferResult}
         />
       </div>
 
@@ -311,12 +507,19 @@ export function StockManager({
                   <td className="py-2 pr-2">
                     <span
                       className={
-                        t.type === "STOCK_IN"
+                        t.type === "STOCK_IN" || t.type === "TRANSFER_IN"
                           ? "text-green-600 dark:text-green-500"
                           : "text-red-600 dark:text-red-500"
                       }
                     >
-                      {t.type === "STOCK_IN" ? "In" : "Out"}
+                      {
+                        {
+                          STOCK_IN: "In",
+                          STOCK_OUT: "Out",
+                          TRANSFER_IN: "Transfer in",
+                          TRANSFER_OUT: "Transfer out",
+                        }[t.type]
+                      }
                     </span>
                   </td>
                   <td className="py-2 pr-2">
@@ -324,7 +527,9 @@ export function StockManager({
                   </td>
                   <td className="py-2 pr-2">{t.location.name}</td>
                   <td className="py-2 pr-2">
-                    {t.type === "STOCK_IN" ? "+" : "-"}
+                    {t.type === "STOCK_IN" || t.type === "TRANSFER_IN"
+                      ? "+"
+                      : "-"}
                     {t.quantity}
                   </td>
                   <td className="py-2 pr-2">
