@@ -13,41 +13,72 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search")?.trim() ?? "";
   const categoryId = searchParams.get("categoryId") ?? undefined;
-  const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const pageSize = Math.min(
     100,
     Math.max(1, Number(searchParams.get("pageSize")) || 20),
   );
 
-  const where = {
-    ...(categoryId ? { categoryId } : {}),
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { sku: { contains: search, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
+  // Cursor is `${name}::${id}` (opaque to the client). `name` alone isn't
+  // unique, so the seek is a compound (name, id) comparison to avoid
+  // skipping or repeating rows when two products share a name.
+  const rawCursor = searchParams.get("cursor");
+  const cursor = rawCursor
+    ? (() => {
+        const idx = rawCursor.lastIndexOf("::");
+        return idx === -1
+          ? null
+          : { name: rawCursor.slice(0, idx), id: rawCursor.slice(idx + 2) };
+      })()
+    : null;
 
-  const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: { category: { select: { id: true, name: true } } },
-      orderBy: { name: "asc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.product.count({ where }),
-  ]);
+  const conditions = [
+    ...(categoryId ? [{ categoryId }] : []),
+    ...(search
+      ? [
+          {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              { sku: { contains: search, mode: "insensitive" as const } },
+            ],
+          },
+        ]
+      : []),
+    ...(cursor
+      ? [
+          {
+            OR: [
+              { name: { gt: cursor.name } },
+              {
+                AND: [{ name: cursor.name }, { id: { gt: cursor.id } }],
+              },
+            ],
+          },
+        ]
+      : []),
+  ];
+
+  const where = conditions.length ? { AND: conditions } : {};
+
+  // Keyset (cursor) pagination instead of OFFSET: Postgres seeks directly
+  // via the (name, id) index rather than scanning and discarding every
+  // prior row, so this stays fast regardless of how deep the page is.
+  const products = await prisma.product.findMany({
+    where,
+    include: { category: { select: { id: true, name: true } } },
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    take: pageSize + 1,
+  });
+
+  const hasMore = products.length > pageSize;
+  const page = products.slice(0, pageSize);
+  const last = page[page.length - 1];
+  const nextCursor = hasMore && last ? `${last.name}::${last.id}` : null;
 
   return NextResponse.json({
-    products,
-    total,
-    page,
+    products: page,
     pageSize,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    nextCursor,
+    hasMore,
   });
 }
 

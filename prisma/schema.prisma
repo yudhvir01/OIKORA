@@ -48,7 +48,11 @@ model Product {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  @@index([categoryId])
+  // Trigram GIN indexes on name/sku for fast ILIKE search at scale are
+  // managed via raw SQL in the add_search_indexes migration (Prisma's
+  // schema language doesn't model pg_trgm operator classes).
+  @@index([name])
+  @@index([categoryId, name])
 }
 
 model Location {

@@ -16,19 +16,23 @@ type Category = { id: string; name: string };
 
 type ProductsResponse = {
   products: Product[];
-  total: number;
-  page: number;
   pageSize: number;
-  totalPages: number;
+  nextCursor: string | null;
+  hasMore: boolean;
 };
 
 export function ProductList({ categories }: { categories: Category[] }) {
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [page, setPage] = useState(1);
+  // Stack of cursors visited so far, so "Previous" can pop back. `null`
+  // at index 0 always means "from the start."
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [cursorIndex, setCursorIndex] = useState(0);
   const [data, setData] = useState<ProductsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const cursor = cursorStack[cursorIndex];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,7 +43,7 @@ export function ProductList({ categories }: { categories: Category[] }) {
         const params = new URLSearchParams();
         if (search) params.set("search", search);
         if (categoryId) params.set("categoryId", categoryId);
-        params.set("page", String(page));
+        if (cursor) params.set("cursor", cursor);
 
         const res = await fetch(`/api/products?${params.toString()}`, {
           signal: controller.signal,
@@ -63,7 +67,25 @@ export function ProductList({ categories }: { categories: Category[] }) {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [search, categoryId, page]);
+  }, [search, categoryId, cursor]);
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setCursorIndex(0);
+  }
+
+  function goNext() {
+    if (!data?.nextCursor) return;
+    setCursorStack((stack) => [
+      ...stack.slice(0, cursorIndex + 1),
+      data.nextCursor,
+    ]);
+    setCursorIndex((i) => i + 1);
+  }
+
+  function goPrevious() {
+    setCursorIndex((i) => Math.max(0, i - 1));
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -77,7 +99,7 @@ export function ProductList({ categories }: { categories: Category[] }) {
             placeholder="Name or SKU"
             value={search}
             onChange={(e) => {
-              setPage(1);
+              resetToFirstPage();
               setSearch(e.target.value);
             }}
             className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
@@ -91,7 +113,7 @@ export function ProductList({ categories }: { categories: Category[] }) {
             id="category"
             value={categoryId}
             onChange={(e) => {
-              setPage(1);
+              resetToFirstPage();
               setCategoryId(e.target.value);
             }}
             className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
@@ -157,24 +179,22 @@ export function ProductList({ categories }: { categories: Category[] }) {
         </tbody>
       </table>
 
-      {data && data.totalPages > 1 ? (
+      {data && (cursorIndex > 0 || data.hasMore) ? (
         <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
-          <span>
-            Page {data.page} of {data.totalPages} &middot; {data.total} total
-          </span>
+          <span>Showing {data.products.length} products</span>
           <div className="flex gap-2">
             <button
               type="button"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={cursorIndex <= 0}
+              onClick={goPrevious}
               className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40 dark:border-zinc-700"
             >
               Previous
             </button>
             <button
               type="button"
-              disabled={data.page >= data.totalPages}
-              onClick={() => setPage((p) => p + 1)}
+              disabled={!data.hasMore}
+              onClick={goNext}
               className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40 dark:border-zinc-700"
             >
               Next
