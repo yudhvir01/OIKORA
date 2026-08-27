@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
@@ -8,9 +9,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = requireAdmin(session);
+  if (denied) return denied;
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -48,9 +48,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = requireAdmin(session);
+  if (denied) return denied;
 
   const { id } = await params;
 
