@@ -38,4 +38,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-27: `GET /api/products` now includes each product's `totalStock` (summed across `StockLevel` via `groupBy`), and the `/dashboard/products` list shows a "Low stock" badge next to the stock count whenever `totalStock` is below `reorderPoint`. Completes the Phase 2 low-stock indicator roadmap item, closing out Phase 2.
 
+- 2026-08-27: Added the `Supplier` model (`name` unique, optional `contactName`/`email`/`phone`/`address`) + migration, REST API routes (`GET`/`POST /api/suppliers`, `PATCH`/`DELETE /api/suppliers/[id]`), and a `/dashboard/suppliers` CRUD screen (`SupplierManager`), each requiring an authenticated session for reads and ADMIN for writes. Enabled the "Suppliers" sidebar link. Starts and completes the Phase 3 supplier model item.
+
 <!-- New entries are appended above this line by the daily build routine. -->

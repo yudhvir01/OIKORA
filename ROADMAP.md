@@ -26,7 +26,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Low-stock indicator on product list (below reorder point)
 
 ## Phase 3 — Suppliers, Orders & Alerts (Weeks 9-13)
-- [ ] Supplier model + CRUD
+- [x] Supplier model + CRUD
 - [ ] Purchase order model (draft, submitted, received)
 - [ ] Purchase order line items, linking to products/suppliers
 - [ ] Receiving a PO auto-creates stock-in transactions

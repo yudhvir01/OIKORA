@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/categories", label: "Categories", available: true },
   { href: "/dashboard/locations", label: "Locations", available: true },
   { href: "/dashboard/stock", label: "Stock", available: true },
-  { href: "/dashboard/suppliers", label: "Suppliers", available: false },
+  { href: "/dashboard/suppliers", label: "Suppliers", available: true },
 ] as const;
 
 export function Sidebar() {
