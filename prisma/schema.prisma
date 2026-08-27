@@ -24,6 +24,7 @@ model User {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   stockTransactions StockTransaction[]
+  purchaseOrders    PurchaseOrder[]
 }
 
 model Category {
@@ -86,14 +87,39 @@ enum StockTransactionType {
 }
 
 model Supplier {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  contactName String?
-  email       String?
-  phone       String?
-  address     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String          @id @default(cuid())
+  name           String          @unique
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  SUBMITTED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id          String              @id @default(cuid())
+  status      PurchaseOrderStatus @default(DRAFT)
+  supplierId  String
+  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  note        String?
+  createdById String
+  createdBy   User                @relation(fields: [createdById], references: [id])
+  submittedAt DateTime?
+  receivedAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([supplierId])
+  @@index([status])
 }
 
 model StockTransaction {

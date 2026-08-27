@@ -40,4 +40,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-27: Added the `Supplier` model (`name` unique, optional `contactName`/`email`/`phone`/`address`) + migration, REST API routes (`GET`/`POST /api/suppliers`, `PATCH`/`DELETE /api/suppliers/[id]`), and a `/dashboard/suppliers` CRUD screen (`SupplierManager`), each requiring an authenticated session for reads and ADMIN for writes. Enabled the "Suppliers" sidebar link. Starts and completes the Phase 3 supplier model item.
 
+- 2026-08-27: Added the `PurchaseOrder` model (`status` enum `DRAFT`/`SUBMITTED`/`RECEIVED`/`CANCELLED` defaulting to `DRAFT`, `supplier`/`createdBy` relations, optional `note`, `submittedAt`/`receivedAt` timestamps) + migration, and REST API routes: `GET`/`POST /api/purchase-orders` (create as `DRAFT`, optional `status`/`supplierId` filters on list) and `GET`/`PATCH /api/purchase-orders/[id]` (status transitions restricted to `DRAFT`→`SUBMITTED`/`CANCELLED` and `SUBMITTED`→`CANCELLED`, returning 409 on an invalid transition). No UI yet — a usable purchase order screen needs line items first. `RECEIVED` is intentionally not reachable via this endpoint; it will be set by the receiving flow that also creates stock-in transactions. Completes the Phase 3 purchase order model roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
