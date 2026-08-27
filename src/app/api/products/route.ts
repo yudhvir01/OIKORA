@@ -74,8 +74,23 @@ export async function GET(request: Request) {
   const last = page[page.length - 1];
   const nextCursor = hasMore && last ? `${last.name}::${last.id}` : null;
 
+  const stockTotals = page.length
+    ? await prisma.stockLevel.groupBy({
+        by: ["productId"],
+        where: { productId: { in: page.map((p) => p.id) } },
+        _sum: { quantity: true },
+      })
+    : [];
+  const stockByProductId = new Map(
+    stockTotals.map((s) => [s.productId, s._sum.quantity ?? 0]),
+  );
+  const productsWithStock = page.map((product) => ({
+    ...product,
+    totalStock: stockByProductId.get(product.id) ?? 0,
+  }));
+
   return NextResponse.json({
-    products: page,
+    products: productsWithStock,
     pageSize,
     nextCursor,
     hasMore,

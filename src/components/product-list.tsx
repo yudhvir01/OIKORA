@@ -9,6 +9,7 @@ type Product = {
   name: string;
   unit: string;
   reorderPoint: number;
+  totalStock: number;
   category: { id: string; name: string };
 };
 
@@ -137,44 +138,58 @@ export function ProductList({ categories }: { categories: Category[] }) {
             <th className="py-2 font-medium">Name</th>
             <th className="py-2 font-medium">Category</th>
             <th className="py-2 font-medium">Unit</th>
+            <th className="py-2 font-medium">Stock</th>
             <th className="py-2 font-medium">Reorder point</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={5} className="py-4 text-zinc-500 dark:text-zinc-400">
+              <td colSpan={6} className="py-4 text-zinc-500 dark:text-zinc-400">
                 Loading…
               </td>
             </tr>
           ) : !data || data.products.length === 0 ? (
             <tr>
-              <td colSpan={5} className="py-4 text-zinc-500 dark:text-zinc-400">
+              <td colSpan={6} className="py-4 text-zinc-500 dark:text-zinc-400">
                 No products found.
               </td>
             </tr>
           ) : (
-            data.products.map((product) => (
-              <tr
-                key={product.id}
-                className="border-b border-zinc-100 dark:border-zinc-900"
-              >
-                <td className="py-2 pr-2 font-mono text-xs">{product.sku}</td>
-                <td className="py-2 pr-2">
-                  <Link
-                    href={`/dashboard/products/${product.id}`}
-                    className="hover:underline"
-                  >
-                    {product.name}
-                  </Link>
-                </td>
-                <td className="py-2 pr-2 text-zinc-500 dark:text-zinc-400">
-                  {product.category.name}
-                </td>
-                <td className="py-2 pr-2">{product.unit}</td>
-                <td className="py-2 pr-2">{product.reorderPoint}</td>
-              </tr>
-            ))
+            data.products.map((product) => {
+              const isLowStock = product.totalStock < product.reorderPoint;
+              return (
+                <tr
+                  key={product.id}
+                  className="border-b border-zinc-100 dark:border-zinc-900"
+                >
+                  <td className="py-2 pr-2 font-mono text-xs">{product.sku}</td>
+                  <td className="py-2 pr-2">
+                    <Link
+                      href={`/dashboard/products/${product.id}`}
+                      className="hover:underline"
+                    >
+                      {product.name}
+                    </Link>
+                  </td>
+                  <td className="py-2 pr-2 text-zinc-500 dark:text-zinc-400">
+                    {product.category.name}
+                  </td>
+                  <td className="py-2 pr-2">{product.unit}</td>
+                  <td className="py-2 pr-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      {product.totalStock}
+                      {isLowStock ? (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-400">
+                          Low stock
+                        </span>
+                      ) : null}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-2">{product.reorderPoint}</td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
