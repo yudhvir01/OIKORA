@@ -8,6 +8,16 @@ const INCLUDE = {
   createdBy: { select: { id: true, name: true, email: true } },
 } as const;
 
+const INCLUDE_WITH_LINE_ITEMS = {
+  ...INCLUDE,
+  lineItems: {
+    include: {
+      product: { select: { id: true, sku: true, name: true, unit: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  },
+} as const;
+
 // Receiving (-> RECEIVED) is handled by a dedicated endpoint once line
 // items exist, since it needs to create stock-in transactions atomically.
 const ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
@@ -27,7 +37,7 @@ export async function GET(
   const { id } = await params;
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
     where: { id },
-    include: INCLUDE,
+    include: INCLUDE_WITH_LINE_ITEMS,
   });
   if (!purchaseOrder) {
     return NextResponse.json(

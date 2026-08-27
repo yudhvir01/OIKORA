@@ -37,17 +37,18 @@ model Category {
 }
 
 model Product {
-  id                String             @id @default(cuid())
-  sku               String             @unique
-  name              String
-  unit              String
-  reorderPoint      Int                @default(0)
-  categoryId        String
-  category          Category           @relation(fields: [categoryId], references: [id])
-  stockLevels       StockLevel[]
-  stockTransactions StockTransaction[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                     String                  @id @default(cuid())
+  sku                    String                  @unique
+  name                   String
+  unit                   String
+  reorderPoint           Int                     @default(0)
+  categoryId             String
+  category               Category                @relation(fields: [categoryId], references: [id])
+  stockLevels            StockLevel[]
+  stockTransactions      StockTransaction[]
+  purchaseOrderLineItems PurchaseOrderLineItem[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   // Trigram GIN indexes on name/sku for fast ILIKE search at scale are
   // managed via raw SQL in the add_search_indexes migration (Prisma's
@@ -106,20 +107,36 @@ enum PurchaseOrderStatus {
 }
 
 model PurchaseOrder {
-  id          String              @id @default(cuid())
-  status      PurchaseOrderStatus @default(DRAFT)
+  id          String                  @id @default(cuid())
+  status      PurchaseOrderStatus     @default(DRAFT)
   supplierId  String
-  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  supplier    Supplier                @relation(fields: [supplierId], references: [id])
   note        String?
   createdById String
-  createdBy   User                @relation(fields: [createdById], references: [id])
+  createdBy   User                    @relation(fields: [createdById], references: [id])
   submittedAt DateTime?
   receivedAt  DateTime?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  lineItems   PurchaseOrderLineItem[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
 
   @@index([supplierId])
   @@index([status])
+}
+
+model PurchaseOrderLineItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id])
+  quantity        Int
+  unitCostCents   Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([productId])
 }
 
 model StockTransaction {
