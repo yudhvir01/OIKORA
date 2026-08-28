@@ -29,7 +29,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Supplier model + CRUD
 - [x] Purchase order model (draft, submitted, received)
 - [x] Purchase order line items, linking to products/suppliers
-- [ ] Receiving a PO auto-creates stock-in transactions
+- [x] Receiving a PO auto-creates stock-in transactions
 - [ ] Low-stock email/notification alerts
 - [ ] Reorder suggestions view (products below reorder point + supplier)
 

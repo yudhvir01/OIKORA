@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 const INCLUDE = {
   supplier: { select: { id: true, name: true } },
+  location: { select: { id: true, name: true } },
   createdBy: { select: { id: true, name: true, email: true } },
 } as const;
 
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const supplierId =
     typeof body?.supplierId === "string" ? body.supplierId.trim() : "";
+  const locationId =
+    typeof body?.locationId === "string" ? body.locationId.trim() : "";
   const note =
     typeof body?.note === "string" && body.note.trim() !== ""
       ? body.note.trim()
@@ -59,17 +62,28 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  if (!locationId) {
+    return NextResponse.json(
+      { error: "locationId is required" },
+      { status: 400 },
+    );
+  }
 
-  const supplier = await prisma.supplier.findUnique({
-    where: { id: supplierId },
-  });
+  const [supplier, location] = await Promise.all([
+    prisma.supplier.findUnique({ where: { id: supplierId } }),
+    prisma.location.findUnique({ where: { id: locationId } }),
+  ]);
   if (!supplier) {
     return NextResponse.json({ error: "Supplier not found" }, { status: 400 });
+  }
+  if (!location) {
+    return NextResponse.json({ error: "Location not found" }, { status: 400 });
   }
 
   const purchaseOrder = await prisma.purchaseOrder.create({
     data: {
       supplierId,
+      locationId,
       note,
       createdById: session.user.id,
     },

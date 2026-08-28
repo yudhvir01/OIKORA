@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 const INCLUDE = {
   supplier: { select: { id: true, name: true } },
+  location: { select: { id: true, name: true } },
   createdBy: { select: { id: true, name: true, email: true } },
 } as const;
 

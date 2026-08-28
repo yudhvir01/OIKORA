@@ -63,6 +63,7 @@ model Location {
   address           String?
   stockLevels       StockLevel[]
   stockTransactions StockTransaction[]
+  purchaseOrders    PurchaseOrder[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
@@ -111,6 +112,11 @@ model PurchaseOrder {
   status      PurchaseOrderStatus     @default(DRAFT)
   supplierId  String
   supplier    Supplier                @relation(fields: [supplierId], references: [id])
+  // The location stock is received into when this order is marked RECEIVED.
+  // Nullable so the column can be added without a backfill; the API
+  // requires it when creating a new purchase order.
+  locationId  String?
+  location    Location?               @relation(fields: [locationId], references: [id])
   note        String?
   createdById String
   createdBy   User                    @relation(fields: [createdById], references: [id])
@@ -122,6 +128,7 @@ model PurchaseOrder {
 
   @@index([supplierId])
   @@index([status])
+  @@index([locationId])
 }
 
 model PurchaseOrderLineItem {

@@ -44,4 +44,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-27: Added the `PurchaseOrderLineItem` model (`product` relation, `quantity`, optional `unitCostCents`, cascade-deleted with its parent `PurchaseOrder`) + migration, and REST API routes `POST /api/purchase-orders/[id]/line-items` and `PATCH`/`DELETE /api/purchase-orders/[id]/line-items/[lineItemId]`, all restricted to purchase orders still in `DRAFT` status (409 otherwise). `GET /api/purchase-orders/[id]` now includes the order's line items with product details. Completes the Phase 3 purchase order line items roadmap item.
 
+- 2026-08-28: Added a nullable `locationId` field (+ migration) to `PurchaseOrder`, marking the location stock is received into; `POST /api/purchase-orders` now requires and validates it. Added `POST /api/purchase-orders/[id]/receive`, which atomically (in one `$transaction`) upserts each line item's `StockLevel` at the order's location and records a `STOCK_IN` transaction per line item, then marks the order `RECEIVED` with `receivedAt` set. Rejects orders that aren't `SUBMITTED`, have no location, or have no line items (409). Completes the Phase 3 PO-receiving roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->
