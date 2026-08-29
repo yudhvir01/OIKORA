@@ -1,0 +1,90 @@
+import { prisma } from "@/lib/prisma";
+
+export type TopMovedProduct = {
+  productId: string;
+  sku: string;
+  name: string;
+  totalQuantity: number;
+};
+
+// Products with the most stock movement (in + out + transfers, by unit
+// quantity) in the trailing `days` days. A proxy for "what's busy" until
+// there's a dedicated activity metric.
+export async function getTopMovedProducts(
+  days: number,
+  limit: number,
+): Promise<TopMovedProduct[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  const totals = await prisma.stockTransaction.groupBy({
+    by: ["productId"],
+    where: { createdAt: { gte: since } },
+    _sum: { quantity: true },
+    orderBy: { _sum: { quantity: "desc" } },
+    take: limit,
+  });
+  if (totals.length === 0) return [];
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: totals.map((t) => t.productId) } },
+    select: { id: true, sku: true, name: true },
+  });
+  const productById = new Map(products.map((p) => [p.id, p]));
+
+  return totals
+    .map((t) => {
+      const product = productById.get(t.productId);
+      if (!product) return null;
+      return {
+        productId: product.id,
+        sku: product.sku,
+        name: product.name,
+        totalQuantity: t._sum.quantity ?? 0,
+      };
+    })
+    .filter((entry): entry is TopMovedProduct => entry !== null);
+}
+
+export type MovementTrendDay = {
+  date: string;
+  stockIn: number;
+  stockOut: number;
+};
+
+// Daily stock-in vs. stock-out unit totals for the trailing `days` days,
+// oldest first. Transfers are excluded since they don't change total
+// stock on hand, only its location.
+export async function getMovementTrend(
+  days: number,
+): Promise<MovementTrendDay[]> {
+  const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000);
+  since.setHours(0, 0, 0, 0);
+
+  const transactions = await prisma.stockTransaction.findMany({
+    where: {
+      createdAt: { gte: since },
+      type: { in: ["STOCK_IN", "STOCK_OUT"] },
+    },
+    select: { type: true, quantity: true, createdAt: true },
+  });
+
+  const byDate = new Map<string, { stockIn: number; stockOut: number }>();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(since);
+    d.setDate(d.getDate() + i);
+    byDate.set(d.toISOString().slice(0, 10), { stockIn: 0, stockOut: 0 });
+  }
+
+  for (const tx of transactions) {
+    const key = tx.createdAt.toISOString().slice(0, 10);
+    const entry = byDate.get(key);
+    if (!entry) continue;
+    if (tx.type === "STOCK_IN") entry.stockIn += tx.quantity;
+    else entry.stockOut += tx.quantity;
+  }
+
+  return Array.from(byDate.entries()).map(([date, totals]) => ({
+    date,
+    ...totals,
+  }));
+}

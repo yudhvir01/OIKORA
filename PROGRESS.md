@@ -50,4 +50,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-29: Added `src/lib/reorder-suggestions.ts` (`getReorderSuggestions`, building on `getLowStockProducts` and pairing each low-stock product with the supplier from its most recent `PurchaseOrderLineItem`, if any), `GET /api/reorder-suggestions` (authenticated), and a `/dashboard/reorder-suggestions` page listing SKU, stock, reorder point, and suggested supplier. Enabled the "Reorder Suggestions" sidebar link. Completes the Phase 3 reorder suggestions roadmap item, closing out Phase 3.
 
+- 2026-08-29: Added `src/lib/dashboard-analytics.ts` (`getTopMovedProducts`, a `StockTransaction` groupBy for the busiest products by unit quantity over a trailing window, and `getMovementTrend`, daily stock-in/stock-out totals over a trailing window). Wired both into `/dashboard`: a "Top products by movement (30 days)" table and a "Movement trend (7 days)" bar chart (CSS-only, no charting library) alongside the existing stat cards. This is a slice of the Phase 4 dashboard analytics item — stock value isn't implemented yet (no per-product cost field exists), so the roadmap box stays unchecked.
+
 <!-- New entries are appended above this line by the daily build routine. -->
