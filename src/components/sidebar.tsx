@@ -7,6 +7,11 @@ const NAV_ITEMS = [
   { href: "/dashboard/locations", label: "Locations", available: true },
   { href: "/dashboard/stock", label: "Stock", available: true },
   { href: "/dashboard/suppliers", label: "Suppliers", available: true },
+  {
+    href: "/dashboard/reorder-suggestions",
+    label: "Reorder Suggestions",
+    available: true,
+  },
 ] as const;
 
 export function Sidebar() {

@@ -48,4 +48,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-28: Added `src/lib/low-stock.ts` (`getLowStockProducts`, reusing the existing `StockLevel` groupBy pattern to find products with `reorderPoint > 0` whose total stock has fallen below it) and `src/lib/email.ts` (a `nodemailer`-based `sendEmail` that logs to the console instead of sending when `SMTP_HOST` isn't configured, so it works without real credentials in dev). Added `GET /api/alerts/low-stock` (authenticated) and admin-only `POST /api/alerts/low-stock/notify`, which emails a summary of low-stock products to `ALERT_EMAIL_TO` (400 if unset) and is meant to be triggered by a scheduled job. Documented the new SMTP/alert env vars in `.env.example`. Completes the Phase 3 low-stock alerts roadmap item.
 
+- 2026-08-29: Added `src/lib/reorder-suggestions.ts` (`getReorderSuggestions`, building on `getLowStockProducts` and pairing each low-stock product with the supplier from its most recent `PurchaseOrderLineItem`, if any), `GET /api/reorder-suggestions` (authenticated), and a `/dashboard/reorder-suggestions` page listing SKU, stock, reorder point, and suggested supplier. Enabled the "Reorder Suggestions" sidebar link. Completes the Phase 3 reorder suggestions roadmap item, closing out Phase 3.
+
 <!-- New entries are appended above this line by the daily build routine. -->
