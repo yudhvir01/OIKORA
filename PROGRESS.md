@@ -52,4 +52,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-29: Added `src/lib/dashboard-analytics.ts` (`getTopMovedProducts`, a `StockTransaction` groupBy for the busiest products by unit quantity over a trailing window, and `getMovementTrend`, daily stock-in/stock-out totals over a trailing window). Wired both into `/dashboard`: a "Top products by movement (30 days)" table and a "Movement trend (7 days)" bar chart (CSS-only, no charting library) alongside the existing stat cards. This is a slice of the Phase 4 dashboard analytics item — stock value isn't implemented yet (no per-product cost field exists), so the roadmap box stays unchecked.
 
+- 2026-08-29: Added `src/lib/csv.ts` (a small `toCsv`/`csvResponse` helper with proper quote/comma/newline escaping), `GET /api/products/export` (all products with category name and total stock), and `GET /api/stock-transactions/export` (all stock movements with product/location/creator names, optionally filtered by `productId`/`locationId`), both authenticated and streaming `text/csv` with a `Content-Disposition: attachment` header. Added "Export CSV" links to the products list and the stock movements table. Completes the Phase 4 CSV export roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->

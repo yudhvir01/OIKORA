@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type Product = { id: string; sku: string; name: string };
@@ -473,9 +474,17 @@ export function StockManager({
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
-          Recent stock movements
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
+            Recent stock movements
+          </h2>
+          <Link
+            href="/api/stock-transactions/export"
+            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            Export CSV
+          </Link>
+        </div>
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
