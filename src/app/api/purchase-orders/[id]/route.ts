@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { canTransitionPurchaseOrderStatus } from "@/lib/purchase-order-status";
 import { prisma } from "@/lib/prisma";
 
 const INCLUDE = {
@@ -18,13 +19,6 @@ const INCLUDE_WITH_LINE_ITEMS = {
     orderBy: { createdAt: "asc" },
   },
 } as const;
-
-// Receiving (-> RECEIVED) is handled by a dedicated endpoint once line
-// items exist, since it needs to create stock-in transactions atomically.
-const ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
-  DRAFT: ["SUBMITTED", "CANCELLED"],
-  SUBMITTED: ["CANCELLED"],
-};
 
 export async function GET(
   _request: Request,
@@ -62,7 +56,7 @@ export async function PATCH(
   const body = await request.json().catch(() => null);
   const status = typeof body?.status === "string" ? body.status : "";
 
-  if (!status || !(status in ALLOWED_TRANSITIONS)) {
+  if (status !== "SUBMITTED" && status !== "CANCELLED") {
     return NextResponse.json(
       { error: "status must be one of: SUBMITTED, CANCELLED" },
       { status: 400 },
@@ -79,8 +73,7 @@ export async function PATCH(
     );
   }
 
-  const allowed = ALLOWED_TRANSITIONS[purchaseOrder.status] ?? [];
-  if (!allowed.includes(status)) {
+  if (!canTransitionPurchaseOrderStatus(purchaseOrder.status, status)) {
     return NextResponse.json(
       {
         error: `Cannot transition purchase order from ${purchaseOrder.status} to ${status}`,

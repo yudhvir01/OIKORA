@@ -62,6 +62,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build`     | Production build.                     |
 | `npm run start`     | Run the production build.             |
 | `npm run lint`      | Lint the codebase.                    |
+| `npm test`          | Run the unit test suite (Vitest).     |
 | `npm run db:seed`   | Seed the database with demo data.     |
 
 ## Project structure

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { validateStockMovementInput } from "@/lib/stock-movement";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -42,29 +43,11 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const productId =
-    typeof body?.productId === "string" ? body.productId.trim() : "";
-  const locationId =
-    typeof body?.locationId === "string" ? body.locationId.trim() : "";
-  const quantity = Number(body?.quantity);
-  const note =
-    typeof body?.note === "string" && body.note.trim() !== ""
-      ? body.note.trim()
-      : null;
-
-  if (!productId || !locationId) {
-    return NextResponse.json(
-      { error: "productId and locationId are required" },
-      { status: 400 },
-    );
+  const validated = validateStockMovementInput(body ?? {});
+  if ("error" in validated) {
+    return NextResponse.json({ error: validated.error.message }, { status: 400 });
   }
-
-  if (!Number.isInteger(quantity) || quantity <= 0) {
-    return NextResponse.json(
-      { error: "quantity must be a positive integer" },
-      { status: 400 },
-    );
-  }
+  const { productId, locationId, quantity, note } = validated.data;
 
   const [product, location] = await Promise.all([
     prisma.product.findUnique({ where: { id: productId } }),
