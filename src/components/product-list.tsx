@@ -213,12 +213,12 @@ export function ProductList({ categories }: { categories: Category[] }) {
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-            <th className="py-2 font-medium">SKU</th>
-            <th className="py-2 font-medium">Name</th>
-            <th className="py-2 font-medium">Category</th>
-            <th className="py-2 font-medium">Unit</th>
-            <th className="py-2 font-medium">Stock</th>
-            <th className="py-2 font-medium">Reorder point</th>
+            <th scope="col" className="py-2 font-medium">SKU</th>
+            <th scope="col" className="py-2 font-medium">Name</th>
+            <th scope="col" className="py-2 font-medium">Category</th>
+            <th scope="col" className="py-2 font-medium">Unit</th>
+            <th scope="col" className="py-2 font-medium">Stock</th>
+            <th scope="col" className="py-2 font-medium">Reorder point</th>
           </tr>
         </thead>
         <tbody>

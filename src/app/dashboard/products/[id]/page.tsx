@@ -74,8 +74,8 @@ export default async function ProductDetailPage({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-              <th className="py-2 font-medium">Location</th>
-              <th className="py-2 font-medium">Quantity</th>
+              <th scope="col" className="py-2 font-medium">Location</th>
+              <th scope="col" className="py-2 font-medium">Quantity</th>
             </tr>
           </thead>
           <tbody>

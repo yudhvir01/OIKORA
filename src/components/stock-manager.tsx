@@ -443,9 +443,9 @@ export function StockManager({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-              <th className="py-2 font-medium">Product</th>
-              <th className="py-2 font-medium">Location</th>
-              <th className="py-2 font-medium">Quantity</th>
+              <th scope="col" className="py-2 font-medium">Product</th>
+              <th scope="col" className="py-2 font-medium">Location</th>
+              <th scope="col" className="py-2 font-medium">Quantity</th>
             </tr>
           </thead>
           <tbody>
@@ -488,13 +488,13 @@ export function StockManager({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-              <th className="py-2 font-medium">Date</th>
-              <th className="py-2 font-medium">Type</th>
-              <th className="py-2 font-medium">Product</th>
-              <th className="py-2 font-medium">Location</th>
-              <th className="py-2 font-medium">Quantity</th>
-              <th className="py-2 font-medium">By</th>
-              <th className="py-2 font-medium">Note</th>
+              <th scope="col" className="py-2 font-medium">Date</th>
+              <th scope="col" className="py-2 font-medium">Type</th>
+              <th scope="col" className="py-2 font-medium">Product</th>
+              <th scope="col" className="py-2 font-medium">Location</th>
+              <th scope="col" className="py-2 font-medium">Quantity</th>
+              <th scope="col" className="py-2 font-medium">By</th>
+              <th scope="col" className="py-2 font-medium">Note</th>
             </tr>
           </thead>
           <tbody>

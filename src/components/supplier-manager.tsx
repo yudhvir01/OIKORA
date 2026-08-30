@@ -197,12 +197,12 @@ export function SupplierManager({
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-            <th className="py-2 font-medium">Name</th>
-            <th className="py-2 font-medium">Contact</th>
-            <th className="py-2 font-medium">Email</th>
-            <th className="py-2 font-medium">Phone</th>
-            <th className="py-2 font-medium">Address</th>
-            <th className="py-2 font-medium">Actions</th>
+            <th scope="col" className="py-2 font-medium">Name</th>
+            <th scope="col" className="py-2 font-medium">Contact</th>
+            <th scope="col" className="py-2 font-medium">Email</th>
+            <th scope="col" className="py-2 font-medium">Phone</th>
+            <th scope="col" className="py-2 font-medium">Address</th>
+            <th scope="col" className="py-2 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
