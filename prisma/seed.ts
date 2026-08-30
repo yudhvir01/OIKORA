@@ -23,6 +23,7 @@ const PRODUCTS = [
     unit: "bottle",
     reorderPoint: 48,
     category: "Beverages",
+    unitCostCents: 89,
   },
   {
     sku: "BEV-0002",
@@ -30,6 +31,7 @@ const PRODUCTS = [
     unit: "bottle",
     reorderPoint: 24,
     category: "Beverages",
+    unitCostCents: 249,
   },
   {
     sku: "SNK-0001",
@@ -37,6 +39,7 @@ const PRODUCTS = [
     unit: "bag",
     reorderPoint: 36,
     category: "Snacks",
+    unitCostCents: 179,
   },
   {
     sku: "SNK-0002",
@@ -44,6 +47,7 @@ const PRODUCTS = [
     unit: "bag",
     reorderPoint: 30,
     category: "Snacks",
+    unitCostCents: 229,
   },
   {
     sku: "CLN-0001",
@@ -51,6 +55,7 @@ const PRODUCTS = [
     unit: "bottle",
     reorderPoint: 12,
     category: "Cleaning Supplies",
+    unitCostCents: 349,
   },
   {
     sku: "CLN-0002",
@@ -58,6 +63,7 @@ const PRODUCTS = [
     unit: "each",
     reorderPoint: 50,
     category: "Cleaning Supplies",
+    unitCostCents: 99,
   },
   {
     sku: "OFF-0001",
@@ -65,6 +71,7 @@ const PRODUCTS = [
     unit: "ream",
     reorderPoint: 20,
     category: "Office Supplies",
+    unitCostCents: 599,
   },
   {
     sku: "OFF-0002",
@@ -72,6 +79,7 @@ const PRODUCTS = [
     unit: "box",
     reorderPoint: 15,
     category: "Office Supplies",
+    unitCostCents: 449,
   },
 ];
 
@@ -138,6 +146,7 @@ async function main() {
         name: product.name,
         unit: product.unit,
         reorderPoint: product.reorderPoint,
+        unitCostCents: product.unitCostCents,
         categoryId,
       },
       create: {
@@ -145,6 +154,7 @@ async function main() {
         name: product.name,
         unit: product.unit,
         reorderPoint: product.reorderPoint,
+        unitCostCents: product.unitCostCents,
         categoryId,
       },
     });

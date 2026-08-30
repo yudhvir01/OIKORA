@@ -88,3 +88,19 @@ export async function getMovementTrend(
     ...totals,
   }));
 }
+
+// Total value of stock on hand, in cents: sum over every StockLevel of
+// quantity * the owning product's unitCostCents. Products without a cost
+// set don't contribute (treated as unpriced, not free), so the total is a
+// lower bound whenever some products are missing a cost.
+export async function getStockValueCents(): Promise<number> {
+  const levels = await prisma.stockLevel.findMany({
+    where: { product: { unitCostCents: { not: null } } },
+    select: { quantity: true, product: { select: { unitCostCents: true } } },
+  });
+
+  return levels.reduce(
+    (total, level) => total + level.quantity * (level.product.unitCostCents ?? 0),
+    0,
+  );
+}

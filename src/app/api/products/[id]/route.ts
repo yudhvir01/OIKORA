@@ -22,6 +22,12 @@ export async function PATCH(
   const reorderPoint = Number.isFinite(Number(body?.reorderPoint))
     ? Math.max(0, Math.trunc(Number(body.reorderPoint)))
     : 0;
+  const unitCostCents =
+    body?.unitCostCents === null || body?.unitCostCents === undefined
+      ? null
+      : Number.isFinite(Number(body.unitCostCents))
+        ? Math.max(0, Math.trunc(Number(body.unitCostCents)))
+        : null;
 
   if (!sku || !name || !unit || !categoryId) {
     return NextResponse.json(
@@ -48,7 +54,7 @@ export async function PATCH(
   try {
     const product = await prisma.product.update({
       where: { id },
-      data: { sku, name, unit, categoryId, reorderPoint },
+      data: { sku, name, unit, categoryId, reorderPoint, unitCostCents },
       include: { category: { select: { id: true, name: true } } },
     });
     return NextResponse.json(product);

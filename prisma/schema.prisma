@@ -42,6 +42,7 @@ model Product {
   name                   String
   unit                   String
   reorderPoint           Int                     @default(0)
+  unitCostCents          Int?
   categoryId             String
   category               Category                @relation(fields: [categoryId], references: [id])
   stockLevels            StockLevel[]

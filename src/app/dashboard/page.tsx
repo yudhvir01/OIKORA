@@ -1,23 +1,40 @@
 import { prisma } from "@/lib/prisma";
-import { getMovementTrend, getTopMovedProducts } from "@/lib/dashboard-analytics";
+import {
+  getMovementTrend,
+  getStockValueCents,
+  getTopMovedProducts,
+} from "@/lib/dashboard-analytics";
 
 const TREND_DAYS = 7;
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
 export default async function DashboardPage() {
-  const [totalProducts, totalCategories, totalLocations, products, topMovedProducts, movementTrend] =
-    await Promise.all([
-      prisma.product.count(),
-      prisma.category.count(),
-      prisma.location.count(),
-      prisma.product.findMany({
-        select: {
-          reorderPoint: true,
-          stockLevels: { select: { quantity: true } },
-        },
-      }),
-      getTopMovedProducts(30, 5),
-      getMovementTrend(TREND_DAYS),
-    ]);
+  const [
+    totalProducts,
+    totalCategories,
+    totalLocations,
+    products,
+    topMovedProducts,
+    movementTrend,
+    stockValueCents,
+  ] = await Promise.all([
+    prisma.product.count(),
+    prisma.category.count(),
+    prisma.location.count(),
+    prisma.product.findMany({
+      select: {
+        reorderPoint: true,
+        stockLevels: { select: { quantity: true } },
+      },
+    }),
+    getTopMovedProducts(30, 5),
+    getMovementTrend(TREND_DAYS),
+    getStockValueCents(),
+  ]);
 
   const lowStockCount = products.filter((product) => {
     const totalQuantity = product.stockLevels.reduce(
@@ -32,6 +49,10 @@ export default async function DashboardPage() {
     { label: "Low Stock Items", value: lowStockCount },
     { label: "Categories", value: totalCategories },
     { label: "Locations", value: totalLocations },
+    {
+      label: "Stock Value",
+      value: currencyFormatter.format(stockValueCents / 100),
+    },
   ];
 
   const maxTrendValue = Math.max(
@@ -44,7 +65,7 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
         Dashboard
       </h1>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
           <div
             key={stat.label}
