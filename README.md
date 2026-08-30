@@ -65,6 +65,37 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm test`          | Run the unit test suite (Vitest).     |
 | `npm run db:seed`   | Seed the database with demo data.     |
 
+## Deployment
+
+Targets [Vercel](https://vercel.com) for hosting and [Neon](https://neon.tech)
+for a hosted PostgreSQL database, though any Postgres provider works.
+
+1. Create a Neon (or other Postgres) database and copy its connection string.
+2. Import the repo into Vercel. Framework preset: Next.js (auto-detected);
+   build command and output are left at their defaults.
+3. Set these environment variables in the Vercel project settings
+   (Production, and Preview if you want preview deploys to hit a database
+   too):
+
+   | Variable       | Notes                                                        |
+   | -------------- | ------------------------------------------------------------ |
+   | `DATABASE_URL` | The Neon (or other Postgres) connection string.               |
+   | `AUTH_SECRET`  | Generate with `openssl rand -base64 32`. Required in production. |
+   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Optional — low-stock alert emails log to the console instead of sending if `SMTP_HOST` is unset. |
+   | `ALERT_EMAIL_TO` | Recipient for `POST /api/alerts/low-stock/notify`. Required only if that endpoint is used. |
+
+4. Apply the migration history to the production database once, from a
+   machine with `DATABASE_URL` pointed at it:
+
+   ```bash
+   npx prisma migrate deploy
+   npm run db:seed   # optional: demo data, skip for a real deployment
+   ```
+
+5. Deploy. `GET /api/health` returns `{"status":"ok"}` with a 200 once the
+   app can reach the database, and `503` otherwise — point an uptime
+   monitor or Vercel's health check at it.
+
 ## Project structure
 
 ```

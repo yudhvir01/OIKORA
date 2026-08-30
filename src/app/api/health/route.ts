@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
+
+// Unauthenticated liveness/readiness check for deployment platforms and
+// uptime monitors: confirms the app is serving requests and can reach the
+// database, without exposing anything about the data in it.
+export async function GET() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return NextResponse.json({ status: "ok", database: "ok" });
+  } catch {
+    return NextResponse.json(
+      { status: "error", database: "unreachable" },
+      { status: 503 },
+    );
+  }
+}
