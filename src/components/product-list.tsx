@@ -22,6 +22,12 @@ type ProductsResponse = {
   hasMore: boolean;
 };
 
+type ImportResult = {
+  created: number;
+  updated: number;
+  errors: { line: number; message: string }[];
+};
+
 export function ProductList({ categories }: { categories: Category[] }) {
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -32,6 +38,10 @@ export function ProductList({ categories }: { categories: Category[] }) {
   const [data, setData] = useState<ProductsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const cursor = cursorStack[cursorIndex];
 
@@ -68,7 +78,33 @@ export function ProductList({ categories }: { categories: Category[] }) {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [search, categoryId, cursor]);
+  }, [search, categoryId, cursor, refreshKey]);
+
+  async function handleImportFile(file: File) {
+    setImporting(true);
+    setImportError(null);
+    setImportResult(null);
+    try {
+      const text = await file.text();
+      const res = await fetch("/api/products/import", {
+        method: "POST",
+        headers: { "Content-Type": "text/csv" },
+        body: text,
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setImportError(json.error ?? "Import failed");
+        return;
+      }
+      setImportResult(json);
+      resetToFirstPage();
+      setRefreshKey((k) => k + 1);
+    } catch {
+      setImportError("Import failed");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function resetToFirstPage() {
     setCursorStack([null]);
@@ -133,7 +169,44 @@ export function ProductList({ categories }: { categories: Category[] }) {
         >
           Export CSV
         </Link>
+        <label className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900">
+          {importing ? "Importing…" : "Import CSV"}
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            className="sr-only"
+            disabled={importing}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) handleImportFile(file);
+            }}
+          />
+        </label>
       </div>
+
+      {importError ? <p className="text-sm text-red-600">{importError}</p> : null}
+      {importResult ? (
+        <div className="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+          <p className="text-zinc-900 dark:text-zinc-50">
+            Import complete: {importResult.created} created, {importResult.updated}{" "}
+            updated
+            {importResult.errors.length > 0
+              ? `, ${importResult.errors.length} row(s) skipped`
+              : ""}
+            .
+          </p>
+          {importResult.errors.length > 0 ? (
+            <ul className="mt-2 list-inside list-disc text-red-600">
+              {importResult.errors.map((err, i) => (
+                <li key={i}>
+                  Line {err.line}: {err.message}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

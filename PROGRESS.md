@@ -56,4 +56,6 @@ Target completion: ~4 months from start date (~2026-12-22)
 
 - 2026-08-30: Added a nullable `unitCostCents` field (+ migration) to `Product`, accepted by the create/update API routes and populated in the seed data. Added `getStockValueCents` to `src/lib/dashboard-analytics.ts` (sums `StockLevel.quantity * unitCostCents` across priced products) and a "Stock Value" stat card on `/dashboard`. Completes the Phase 4 dashboard analytics roadmap item (stock value, movement trends, and top products are all now covered), closing out that item.
 
+- 2026-08-30: Added `src/lib/csv.ts#parseCsv` (a quote-aware CSV parser) and `src/lib/product-import.ts#parseProductsCsv` (validates the `sku,name,unit,category,reorderPoint,unitCostCents` header and per-row fields without touching the database), plus admin-only `POST /api/products/import` which resolves each row's category by name, upserts products by SKU, and returns a `{created, updated, errors}` summary. Added an "Import CSV" file picker to the products list that posts the selected file and shows the result/row errors, refreshing the list on success. Completes the Phase 4 CSV import roadmap item.
+
 <!-- New entries are appended above this line by the daily build routine. -->

@@ -36,7 +36,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 ## Phase 4 — Reporting, Polish & Deploy (Weeks 14-17)
 - [x] Dashboard analytics (stock value, movement trends, top products)
 - [x] CSV export for products/transactions
-- [ ] CSV import for bulk product upload
+- [x] CSV import for bulk product upload
 - [ ] Basic test coverage for core flows (auth, stock in/out, PO receive)
 - [ ] Accessibility and responsive polish pass
 - [ ] Deploy to Vercel + hosted Postgres (Neon), production env vars
