@@ -185,9 +185,17 @@ export function ProductList({ categories }: { categories: Category[] }) {
         </label>
       </div>
 
-      {importError ? <p className="text-sm text-red-600">{importError}</p> : null}
+      {importError ? (
+        <p role="alert" className="text-sm text-red-600">
+          {importError}
+        </p>
+      ) : null}
       {importResult ? (
-        <div className="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+        >
           <p className="text-zinc-900 dark:text-zinc-50">
             Import complete: {importResult.created} created, {importResult.updated}{" "}
             updated
@@ -208,8 +216,13 @@ export function ProductList({ categories }: { categories: Category[] }) {
         </div>
       ) : null}
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
 
+      <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -272,6 +285,7 @@ export function ProductList({ categories }: { categories: Category[] }) {
           )}
         </tbody>
       </table>
+      </div>
 
       {data && (cursorIndex > 0 || data.hasMore) ? (
         <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">

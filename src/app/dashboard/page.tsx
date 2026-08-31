@@ -91,6 +91,7 @@ export default async function DashboardPage() {
               No stock movement recorded yet.
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <table className="mt-3 w-full text-left text-sm">
               <tbody>
                 {topMovedProducts.map((product) => (
@@ -111,6 +112,7 @@ export default async function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

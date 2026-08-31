@@ -162,7 +162,11 @@ function MovementForm({
           className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
       </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
       <button
         type="submit"
         disabled={pending || disabled}
@@ -326,7 +330,11 @@ function TransferForm({
           className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
       </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
       <button
         type="submit"
         disabled={pending || disabled || locations.length < 2}
@@ -440,6 +448,7 @@ export function StockManager({
         <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
           Current stock levels
         </h2>
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -471,6 +480,7 @@ export function StockManager({
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -485,6 +495,7 @@ export function StockManager({
             Export CSV
           </Link>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -552,6 +563,7 @@ export function StockManager({
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

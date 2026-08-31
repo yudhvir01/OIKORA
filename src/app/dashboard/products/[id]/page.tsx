@@ -71,33 +71,35 @@ export default async function ProductDetailPage({
         <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
           Stock by location
         </h2>
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-              <th scope="col" className="py-2 font-medium">Location</th>
-              <th scope="col" className="py-2 font-medium">Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {product.stockLevels.length === 0 ? (
-              <tr>
-                <td colSpan={2} className="py-4 text-zinc-500 dark:text-zinc-400">
-                  No stock recorded for this product yet.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                <th scope="col" className="py-2 font-medium">Location</th>
+                <th scope="col" className="py-2 font-medium">Quantity</th>
               </tr>
-            ) : (
-              product.stockLevels.map((level) => (
-                <tr
-                  key={level.id}
-                  className="border-b border-zinc-100 dark:border-zinc-900"
-                >
-                  <td className="py-2 pr-2">{level.location.name}</td>
-                  <td className="py-2 pr-2">{level.quantity}</td>
+            </thead>
+            <tbody>
+              {product.stockLevels.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="py-4 text-zinc-500 dark:text-zinc-400">
+                    No stock recorded for this product yet.
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                product.stockLevels.map((level) => (
+                  <tr
+                    key={level.id}
+                    className="border-b border-zinc-100 dark:border-zinc-900"
+                  >
+                    <td className="py-2 pr-2">{level.location.name}</td>
+                    <td className="py-2 pr-2">{level.quantity}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <ProductTransactionHistory productId={product.id} />

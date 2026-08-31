@@ -71,8 +71,13 @@ export function ProductTransactionHistory({ productId }: { productId: string }) 
         Transaction history
       </h2>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
 
+      <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -131,6 +136,7 @@ export function ProductTransactionHistory({ productId }: { productId: string }) 
           )}
         </tbody>
       </table>
+      </div>
 
       {data && data.totalPages > 1 ? (
         <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">

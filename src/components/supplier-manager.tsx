@@ -192,8 +192,13 @@ export function SupplierManager({
         </button>
       </form>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
 
+      <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
@@ -222,6 +227,7 @@ export function SupplierManager({
                   <>
                     <td className="py-2 pr-2">
                       <input
+                        aria-label="Supplier name"
                         value={editForm.name}
                         onChange={(e) =>
                           setEditForm({ ...editForm, name: e.target.value })
@@ -231,6 +237,7 @@ export function SupplierManager({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        aria-label="Contact name"
                         value={editForm.contactName}
                         onChange={(e) =>
                           setEditForm({
@@ -243,6 +250,7 @@ export function SupplierManager({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        aria-label="Email"
                         value={editForm.email}
                         onChange={(e) =>
                           setEditForm({ ...editForm, email: e.target.value })
@@ -252,6 +260,7 @@ export function SupplierManager({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        aria-label="Phone"
                         value={editForm.phone}
                         onChange={(e) =>
                           setEditForm({ ...editForm, phone: e.target.value })
@@ -261,6 +270,7 @@ export function SupplierManager({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        aria-label="Address"
                         value={editForm.address}
                         onChange={(e) =>
                           setEditForm({ ...editForm, address: e.target.value })
@@ -325,6 +335,7 @@ export function SupplierManager({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
