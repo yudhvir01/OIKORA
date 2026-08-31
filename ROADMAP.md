@@ -37,7 +37,7 @@ Tech stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL +
 - [x] Dashboard analytics (stock value, movement trends, top products)
 - [x] CSV export for products/transactions
 - [x] CSV import for bulk product upload
-- [ ] Basic test coverage for core flows (auth, stock in/out, PO receive)
+- [x] Basic test coverage for core flows (auth, stock in/out, PO receive)
 - [ ] Accessibility and responsive polish pass
 - [ ] Deploy to Vercel + hosted Postgres (Neon), production env vars
 - [ ] Final README with setup instructions and screenshots

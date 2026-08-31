@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { validateStockTransferInput } from "@/lib/stock-transfer";
 
 class InsufficientStockError extends Error {
   constructor(public available: number) {
@@ -50,38 +51,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const productId =
-    typeof body?.productId === "string" ? body.productId.trim() : "";
-  const fromLocationId =
-    typeof body?.fromLocationId === "string" ? body.fromLocationId.trim() : "";
-  const toLocationId =
-    typeof body?.toLocationId === "string" ? body.toLocationId.trim() : "";
-  const quantity = Number(body?.quantity);
-  const note =
-    typeof body?.note === "string" && body.note.trim() !== ""
-      ? body.note.trim()
-      : null;
-
-  if (!productId || !fromLocationId || !toLocationId) {
-    return NextResponse.json(
-      { error: "productId, fromLocationId, and toLocationId are required" },
-      { status: 400 },
-    );
+  const validated = validateStockTransferInput(body ?? {});
+  if ("error" in validated) {
+    return NextResponse.json({ error: validated.error.message }, { status: 400 });
   }
-
-  if (fromLocationId === toLocationId) {
-    return NextResponse.json(
-      { error: "fromLocationId and toLocationId must be different" },
-      { status: 400 },
-    );
-  }
-
-  if (!Number.isInteger(quantity) || quantity <= 0) {
-    return NextResponse.json(
-      { error: "quantity must be a positive integer" },
-      { status: 400 },
-    );
-  }
+  const { productId, fromLocationId, toLocationId, quantity, note } =
+    validated.data;
 
   const [product, fromLocation, toLocation] = await Promise.all([
     prisma.product.findUnique({ where: { id: productId } }),

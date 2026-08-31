@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getPurchaseOrderReceiveError } from "@/lib/purchase-order-receive";
 
 const INCLUDE = {
   supplier: { select: { id: true, name: true } },
@@ -36,28 +37,12 @@ export async function POST(
       { status: 404 },
     );
   }
-  if (purchaseOrder.status !== "SUBMITTED") {
-    return NextResponse.json(
-      {
-        error: `Cannot receive a purchase order with status ${purchaseOrder.status}`,
-      },
-      { status: 409 },
-    );
-  }
-  if (!purchaseOrder.locationId) {
-    return NextResponse.json(
-      { error: "Purchase order has no receiving location" },
-      { status: 409 },
-    );
-  }
-  if (purchaseOrder.lineItems.length === 0) {
-    return NextResponse.json(
-      { error: "Cannot receive a purchase order with no line items" },
-      { status: 409 },
-    );
+  const receiveError = getPurchaseOrderReceiveError(purchaseOrder);
+  if (receiveError) {
+    return NextResponse.json({ error: receiveError }, { status: 409 });
   }
 
-  const locationId = purchaseOrder.locationId;
+  const locationId = purchaseOrder.locationId as string;
   const note = `Received via purchase order ${purchaseOrder.id}`;
 
   const updated = await prisma.$transaction(async (tx) => {
