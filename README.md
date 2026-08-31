@@ -1,5 +1,7 @@
 # Inventory Management
 
+[![CI](https://github.com/yudhvir01/inventory-management/actions/workflows/ci.yml/badge.svg)](https://github.com/yudhvir01/inventory-management/actions/workflows/ci.yml)
+
 A multi-location inventory management system built with Next.js, Prisma, and
 PostgreSQL — products, categories, stock levels across locations, and
 race-safe stock-in/out/transfer transactions with a full audit trail.
@@ -65,6 +67,20 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm test`          | Run the unit test suite (Vitest).     |
 | `npm run db:seed`   | Seed the database with demo data.     |
 
+## Testing
+
+`npm test` runs the Vitest suite: unit tests for every core flow's
+business/validation logic — stock-in/out/transfer quantity and shape
+validation, purchase-order status transitions and receiving preconditions,
+CSV parsing/import, and the `requireAdmin` authorization check. These don't
+require a database. Route-level tests that exercise the actual API handlers
+against a real Postgres instance aren't part of this suite yet.
+
+CI (`.github/workflows/ci.yml`) runs `prisma generate`, lint, `tsc --noEmit`,
+and this test suite on every push and pull request to `main`. It doesn't run
+`next build`, since that prerenders pages that query the database and CI has
+no `DATABASE_URL` to give it — a full build is left to the deploy platform.
+
 ## Deployment
 
 Targets [Vercel](https://vercel.com) for hosting and [Neon](https://neon.tech)
@@ -94,7 +110,18 @@ for a hosted PostgreSQL database, though any Postgres provider works.
 
 5. Deploy. `GET /api/health` returns `{"status":"ok"}` with a 200 once the
    app can reach the database, and `503` otherwise — point an uptime
-   monitor or Vercel's health check at it.
+   monitor or Vercel's health check at it. If `DATABASE_URL` or
+   `AUTH_SECRET` is missing in production, the app fails fast at startup
+   with an error naming exactly what's missing, rather than surfacing as a
+   confusing runtime error on first request.
+
+## Screenshots
+
+Not included yet — this project has been built and verified (type-checking,
+lint, and the unit test suite) without a live database in its build
+environment so far, so no screenshots have been taken against real running
+pages. These will be added once the app is actually deployed against a real
+database.
 
 ## Project structure
 
@@ -102,11 +129,13 @@ for a hosted PostgreSQL database, though any Postgres provider works.
 src/
   app/            # App Router routes, API routes, server actions
   components/     # Client/server React components
-  lib/            # Prisma client, auth helpers
+  lib/            # Prisma client, auth helpers, env validation, business logic
   auth.ts         # Auth.js configuration
   proxy.ts        # Route protection (Next.js 16's replacement for middleware.ts)
 prisma/
   schema.prisma   # Data model
   migrations/     # Migration history
   seed.ts         # Demo data seed script
+.github/workflows/
+  ci.yml          # Lint/typecheck/test on every push and PR to main
 ```
