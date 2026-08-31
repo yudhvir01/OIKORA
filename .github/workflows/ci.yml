@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # No DATABASE_URL is available in CI, so this only runs the checks
+      # that don't need a live database: codegen, lint, type-check, unit
+      # tests. A full `next build` prerenders DB-backed pages and is left
+      # to the deploy platform (Vercel), which has real credentials.
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
