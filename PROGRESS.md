@@ -6,6 +6,16 @@ scheduled build process. Newest entries at the top.
 Project start date: 2026-08-22
 Target completion: ~4 months from start date (~2026-12-22)
 
+- 2026-09-01: Deployed to Vercel with a Neon Postgres database. Applied all
+  12 migrations and seeded demo data; fixed a build script bug (`prisma
+  generate` wasn't running before `next build`, so the gitignored generated
+  client was missing on a clean checkout) and a `nodemailer` dependency
+  install gap. Verified `/api/health` returns `{"status":"ok","database":"ok"}`
+  against the live deployment. Captured real screenshots (dashboard,
+  products, stock, reorder suggestions) from the live app and added them to
+  README.md, replacing the placeholder. Completes both remaining Phase 4
+  items.
+
 - 2026-08-23: Added the `Category` model + migration (`name` unique, optional `description`), REST API routes (`GET`/`POST /api/categories`, `PATCH`/`DELETE /api/categories/[id]`, each requiring an authenticated session), and a `/dashboard/categories` CRUD screen (`CategoryManager` client component) supporting create, inline edit, and delete. Completes the Phase 1 category item.
 
 - 2026-08-23: Added the dashboard shell: a `/dashboard` route with its own layout, a `Sidebar` component (Dashboard link active, other future modules listed but disabled with a "Soon" badge), and an empty dashboard page with placeholder stat cards (Total Products, Low Stock Items, Categories, Locations). The root `/` route now redirects to `/dashboard`. Completes the Phase 1 base layout item.

@@ -6,6 +6,9 @@ A multi-location inventory management system built with Next.js, Prisma, and
 PostgreSQL — products, categories, stock levels across locations, and
 race-safe stock-in/out/transfer transactions with a full audit trail.
 
+**Live demo:** https://inventory-management-three-black.vercel.app
+(demo credentials: `admin@example.com` / `admin1234`)
+
 Built incrementally as a portfolio project — see [ROADMAP.md](./ROADMAP.md)
 for the planned phases and [PROGRESS.md](./PROGRESS.md) for a running log of
 what's been built and when.
@@ -117,11 +120,27 @@ for a hosted PostgreSQL database, though any Postgres provider works.
 
 ## Screenshots
 
-Not included yet — this project has been built and verified (type-checking,
-lint, and the unit test suite) without a live database in its build
-environment so far, so no screenshots have been taken against real running
-pages. These will be added once the app is actually deployed against a real
+Captured from the live Vercel deployment backed by a real Neon Postgres
 database.
+
+**Dashboard** — stock value, low-stock count, top-moved products, and a
+7-day movement trend.
+
+![Dashboard](docs/screenshots/dashboard.jpg)
+
+**Products** — searchable/filterable list with low-stock badges and CSV
+export/import.
+
+![Products](docs/screenshots/products.jpg)
+
+**Stock** — receive, issue, and transfer stock across locations, with
+current stock levels below.
+
+![Stock](docs/screenshots/stock.jpg)
+
+**Reorder Suggestions** — products below their reorder point.
+
+![Reorder Suggestions](docs/screenshots/reorder-suggestions.jpg)
 
 ## Project structure
 
