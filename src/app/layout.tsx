@@ -1,6 +1,11 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  IBM_Plex_Sans,
+  IBM_Plex_Mono,
+} from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -16,8 +21,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Scoped to the OIKORA brand lockup in the nav only — the rest of the
+// product's typography stays on Geist.
+const brandSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex-sans",
+  weight: ["600"],
+  subsets: ["latin"],
+});
+
+const brandMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  weight: ["500"],
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Inventory Management",
+  title: "OIKORA — Business, in sync.",
   description: "Multi-location inventory tracking, stock movements, and purchase orders.",
 };
 
@@ -28,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${brandSans.variable} ${brandMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Sets [data-theme] before hydration so there's no flash of the

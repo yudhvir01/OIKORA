@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { OikoraMark } from "@/components/oikora-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-avatar";
 
@@ -9,8 +10,16 @@ export async function SiteNav() {
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 px-4 py-4 sm:px-6 dark:border-zinc-800">
-      <Link href="/" className="font-semibold">
-        Inventory
+      <Link href="/" className="flex items-center gap-2.5 text-[var(--accent)]">
+        <OikoraMark className="h-7 w-7 shrink-0" />
+        <span className="flex flex-col leading-none text-[var(--foreground)]">
+          <span className="font-brand-sans text-sm font-semibold tracking-[0.14em]">
+            OIKORA
+          </span>
+          <span className="font-brand-mono text-[9px] tracking-[0.16em] text-[var(--accent)]">
+            BUSINESS, IN SYNC.
+          </span>
+        </span>
       </Link>
       <div className="flex items-center gap-3">
         <ThemeToggle />

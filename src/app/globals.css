@@ -31,6 +31,9 @@
   --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Scoped to the brand lockup in the nav — see layout.tsx. */
+  --font-brand-sans: var(--font-ibm-plex-sans);
+  --font-brand-mono: var(--font-ibm-plex-mono);
 }
 
 /* System preference, until the visitor picks explicitly (see the inline

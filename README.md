@@ -1,10 +1,17 @@
-# Inventory Management
+# OIKORA
 
-[![CI](https://github.com/yudhvir01/inventory-management/actions/workflows/ci.yml/badge.svg)](https://github.com/yudhvir01/inventory-management/actions/workflows/ci.yml)
+**Business, in sync.**
+
+[![CI](https://github.com/yudhvir01/oikora/actions/workflows/ci.yml/badge.svg)](https://github.com/yudhvir01/oikora/actions/workflows/ci.yml)
 
 A multi-location inventory management system built with Next.js, Prisma, and
 PostgreSQL — products, categories, stock levels across locations, and
 race-safe stock-in/out/transfer transactions with a full audit trail.
+
+Products, Purchases, and Sales are three connected views onto one thing: a
+movement ledger that's the single source of truth for every quantity in the
+system. That's what the name is about — one system, three sides of it,
+always in sync.
 
 **Live demo:** https://inventory-management-three-black.vercel.app
 (demo credentials: `admin@example.com` / `admin1234`)
@@ -13,8 +20,13 @@ Built incrementally as a portfolio project — see [ROADMAP.md](./ROADMAP.md)
 for the planned phases and [PROGRESS.md](./PROGRESS.md) for a running log of
 what's been built and when. Phases 1-4 (this README) are shipped; Phase 5 is
 an 8-week push turning this into a multi-tenant product with a Sales module
-— see [`docs/stockflow-product-spec.pdf`](./docs/stockflow-product-spec.pdf)
-for the full business-requirements writeup behind that phase.
+— see [`docs/oikora-product-spec.pdf`](./docs/oikora-product-spec.pdf) for
+the full business-requirements writeup behind that phase.
+
+> **Repo rename in progress:** this project is being renamed from
+> `inventory-management` to `oikora` on GitHub. The CI badge and links above
+> already point at the new name — if it 404s, the rename hasn't happened
+> yet.
 
 ## Features
 

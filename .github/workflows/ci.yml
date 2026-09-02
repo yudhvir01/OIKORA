@@ -24,6 +24,11 @@ jobs:
       # tests. A full `next build` prerenders DB-backed pages and is left
       # to the deploy platform (Vercel), which has real credentials.
       - run: npx prisma generate
+      # `next build`/`next dev` normally generate the typed-route ambient
+      # types (LayoutProps, PageProps, etc.) as a side effect; since CI
+      # never runs either, `next typegen` produces them directly so
+      # `tsc --noEmit` below can actually resolve those types.
+      - run: npx next typegen
       - run: npm run lint
       - run: npx tsc --noEmit
       - run: npm test
