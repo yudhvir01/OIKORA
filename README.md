@@ -11,7 +11,10 @@ race-safe stock-in/out/transfer transactions with a full audit trail.
 
 Built incrementally as a portfolio project — see [ROADMAP.md](./ROADMAP.md)
 for the planned phases and [PROGRESS.md](./PROGRESS.md) for a running log of
-what's been built and when.
+what's been built and when. Phases 1-4 (this README) are shipped; Phase 5 is
+an 8-week push turning this into a multi-tenant product with a Sales module
+— see [`docs/stockflow-product-spec.pdf`](./docs/stockflow-product-spec.pdf)
+for the full business-requirements writeup behind that phase.
 
 ## Features
 
@@ -30,6 +33,12 @@ what's been built and when.
 - **Audit log** — every stock movement is recorded as a `StockTransaction`
   (type, quantity, who, when), viewable per-product on the product detail
   page.
+- **Light/dark mode** — a real theme toggle in the nav (not just OS
+  detection), with a circular reveal animation via the View Transitions API
+  and no flash of the wrong theme on load. Defaults to the system
+  preference until the user picks explicitly, persisted per browser.
+- **Account menu** — the avatar in the nav opens a menu with the signed-in
+  user's name, email, and role, and sign out.
 
 ## Tech stack
 
@@ -37,6 +46,8 @@ what's been built and when.
 - [Tailwind CSS](https://tailwindcss.com) 4
 - [Prisma](https://prisma.io) 7 + PostgreSQL (via `@prisma/adapter-pg`)
 - [Auth.js / NextAuth](https://authjs.dev) v5 (credentials provider)
+- [Vercel Analytics](https://vercel.com/docs/analytics) (page views on the
+  deployed app; a no-op locally)
 
 ## Getting started
 
@@ -120,9 +131,6 @@ for a hosted PostgreSQL database, though any Postgres provider works.
 
 ## Screenshots
 
-Captured from the live Vercel deployment backed by a real Neon Postgres
-database.
-
 **Dashboard** — stock value, low-stock count, top-moved products, and a
 7-day movement trend.
 
@@ -141,6 +149,10 @@ current stock levels below.
 **Reorder Suggestions** — products below their reorder point.
 
 ![Reorder Suggestions](docs/screenshots/reorder-suggestions.jpg)
+
+**Dark mode** — the theme toggle and account menu, open together.
+
+![Dark mode](docs/screenshots/dark-mode.jpg)
 
 ## Project structure
 

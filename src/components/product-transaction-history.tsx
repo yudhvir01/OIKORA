@@ -109,7 +109,7 @@ export function ProductTransactionHistory({ productId }: { productId: string }) 
                 className="border-b border-zinc-100 dark:border-zinc-900"
               >
                 <td className="py-2 pr-2 text-zinc-500 dark:text-zinc-400">
-                  {new Date(t.createdAt).toLocaleString()}
+                  {new Date(t.createdAt).toLocaleString("en-US")}
                 </td>
                 <td className="py-2 pr-2">
                   <span

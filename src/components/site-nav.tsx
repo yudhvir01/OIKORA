@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { auth } from "@/auth";
-import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-avatar";
 
 export async function SiteNav() {
   const session = await auth();
@@ -11,14 +12,14 @@ export async function SiteNav() {
       <Link href="/" className="font-semibold">
         Inventory
       </Link>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
         {session?.user ? (
-          <>
-            <span className="max-w-[50vw] truncate text-sm text-zinc-600 dark:text-zinc-400">
-              {session.user.email} ({session.user.role})
-            </span>
-            <LogoutButton />
-          </>
+          <UserMenu
+            name={session.user.name}
+            email={session.user.email ?? ""}
+            role={session.user.role}
+          />
         ) : (
           <Link href="/login" className="text-sm font-medium">
             Sign in

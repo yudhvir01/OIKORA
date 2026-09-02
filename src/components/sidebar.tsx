@@ -54,10 +54,10 @@ export function Sidebar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setOpen(false)}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium ${
+                  className={`block rounded-md border-l-[3px] px-2.5 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-50"
-                      : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                      : "border-transparent text-zinc-700 hover:bg-[var(--surface-2)] dark:text-zinc-300"
                   }`}
                 >
                   {item.label}
