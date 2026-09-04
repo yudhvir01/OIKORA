@@ -33,6 +33,7 @@ export async function GET(request: Request) {
   const transactions = await prisma.stockTransaction.findMany({
     where: {
       type: { in: ["TRANSFER_IN", "TRANSFER_OUT"] },
+      organizationId: session.user.activeOrganizationId,
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),
     },
@@ -57,11 +58,12 @@ export async function POST(request: Request) {
   }
   const { productId, fromLocationId, toLocationId, quantity, note } =
     validated.data;
+  const organizationId = session.user.activeOrganizationId;
 
   const [product, fromLocation, toLocation] = await Promise.all([
-    prisma.product.findUnique({ where: { id: productId } }),
-    prisma.location.findUnique({ where: { id: fromLocationId } }),
-    prisma.location.findUnique({ where: { id: toLocationId } }),
+    prisma.product.findUnique({ where: { id: productId, organizationId } }),
+    prisma.location.findUnique({ where: { id: fromLocationId, organizationId } }),
+    prisma.location.findUnique({ where: { id: toLocationId, organizationId } }),
   ]);
 
   if (!product) {
@@ -86,6 +88,7 @@ export async function POST(request: Request) {
         where: {
           productId,
           locationId: fromLocationId,
+          organizationId,
           quantity: { gte: quantity },
         },
         data: { quantity: { decrement: quantity } },
@@ -110,7 +113,7 @@ export async function POST(request: Request) {
         where: {
           productId_locationId: { productId, locationId: toLocationId },
         },
-        create: { productId, locationId: toLocationId, quantity },
+        create: { productId, locationId: toLocationId, quantity, organizationId },
         update: { quantity: { increment: quantity } },
       });
 
@@ -120,6 +123,7 @@ export async function POST(request: Request) {
           quantity,
           productId,
           locationId: fromLocationId,
+          organizationId,
           note,
           createdById: session.user.id,
         },
@@ -132,6 +136,7 @@ export async function POST(request: Request) {
           quantity,
           productId,
           locationId: toLocationId,
+          organizationId,
           note,
           createdById: session.user.id,
         },

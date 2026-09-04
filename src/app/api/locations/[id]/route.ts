@@ -11,6 +11,7 @@ export async function PATCH(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -24,7 +25,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const existing = await prisma.location.findUnique({ where: { name } });
+  const existing = await prisma.location.findUnique({
+    where: { organizationId_name: { organizationId, name } },
+  });
   if (existing && existing.id !== id) {
     return NextResponse.json(
       { error: "A location with that name already exists" },
@@ -34,7 +37,7 @@ export async function PATCH(
 
   try {
     const location = await prisma.location.update({
-      where: { id },
+      where: { id, organizationId },
       data: { name, address },
     });
     return NextResponse.json(location);
@@ -50,11 +53,12 @@ export async function DELETE(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
 
   try {
-    await prisma.location.delete({ where: { id } });
+    await prisma.location.delete({ where: { id, organizationId } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });

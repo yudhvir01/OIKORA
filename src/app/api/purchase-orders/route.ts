@@ -30,6 +30,7 @@ export async function GET(request: Request) {
 
   const purchaseOrders = await prisma.purchaseOrder.findMany({
     where: {
+      organizationId: session.user.activeOrganizationId,
       ...(status ? { status } : {}),
       ...(supplierId ? { supplierId } : {}),
     },
@@ -69,9 +70,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const organizationId = session.user.activeOrganizationId;
   const [supplier, location] = await Promise.all([
-    prisma.supplier.findUnique({ where: { id: supplierId } }),
-    prisma.location.findUnique({ where: { id: locationId } }),
+    prisma.supplier.findUnique({ where: { id: supplierId, organizationId } }),
+    prisma.location.findUnique({ where: { id: locationId, organizationId } }),
   ]);
   if (!supplier) {
     return NextResponse.json({ error: "Supplier not found" }, { status: 400 });
@@ -84,6 +86,7 @@ export async function POST(request: Request) {
     data: {
       supplierId,
       locationId,
+      organizationId,
       note,
       createdById: session.user.id,
     },

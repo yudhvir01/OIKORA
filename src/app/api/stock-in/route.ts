@@ -21,6 +21,7 @@ export async function GET(request: Request) {
   const transactions = await prisma.stockTransaction.findMany({
     where: {
       type: "STOCK_IN",
+      organizationId: session.user.activeOrganizationId,
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),
     },
@@ -48,10 +49,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validated.error.message }, { status: 400 });
   }
   const { productId, locationId, quantity, note } = validated.data;
+  const organizationId = session.user.activeOrganizationId;
 
   const [product, location] = await Promise.all([
-    prisma.product.findUnique({ where: { id: productId } }),
-    prisma.location.findUnique({ where: { id: locationId } }),
+    prisma.product.findUnique({ where: { id: productId, organizationId } }),
+    prisma.location.findUnique({ where: { id: locationId, organizationId } }),
   ]);
 
   if (!product) {
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
   const [stockLevel, transaction] = await prisma.$transaction([
     prisma.stockLevel.upsert({
       where: { productId_locationId: { productId, locationId } },
-      create: { productId, locationId, quantity },
+      create: { productId, locationId, quantity, organizationId },
       update: { quantity: { increment: quantity } },
     }),
     prisma.stockTransaction.create({
@@ -73,6 +75,7 @@ export async function POST(request: Request) {
         quantity,
         productId,
         locationId,
+        organizationId,
         note,
         createdById: session.user.id,
       },

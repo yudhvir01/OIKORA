@@ -31,7 +31,7 @@ export async function GET(
 
   const { id } = await params;
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id },
+    where: { id, organizationId: session.user.activeOrganizationId },
     include: INCLUDE_WITH_LINE_ITEMS,
   });
   if (!purchaseOrder) {
@@ -64,7 +64,7 @@ export async function PATCH(
   }
 
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id },
+    where: { id, organizationId: session.user.activeOrganizationId },
   });
   if (!purchaseOrder) {
     return NextResponse.json(

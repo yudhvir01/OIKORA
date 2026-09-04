@@ -26,9 +26,10 @@ export async function POST(
   }
 
   const { id } = await params;
+  const organizationId = session.user.activeOrganizationId;
 
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id },
+    where: { id, organizationId },
     include: { lineItems: true },
   });
   if (!purchaseOrder) {
@@ -58,6 +59,7 @@ export async function POST(
           productId: lineItem.productId,
           locationId,
           quantity: lineItem.quantity,
+          organizationId,
         },
         update: { quantity: { increment: lineItem.quantity } },
       });
@@ -68,6 +70,7 @@ export async function POST(
           quantity: lineItem.quantity,
           productId: lineItem.productId,
           locationId,
+          organizationId,
           note,
           createdById: session.user.id,
         },

@@ -11,6 +11,7 @@ export async function GET() {
   }
 
   const suppliers = await prisma.supplier.findMany({
+    where: { organizationId: session.user.activeOrganizationId },
     orderBy: { name: "asc" },
   });
   return NextResponse.json(suppliers);
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
@@ -44,7 +46,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const existing = await prisma.supplier.findUnique({ where: { name } });
+  const existing = await prisma.supplier.findUnique({
+    where: { organizationId_name: { organizationId, name } },
+  });
   if (existing) {
     return NextResponse.json(
       { error: "A supplier with that name already exists" },
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   const supplier = await prisma.supplier.create({
-    data: { name, contactName, email, phone, address },
+    data: { name, contactName, email, phone, address, organizationId },
   });
   return NextResponse.json(supplier, { status: 201 });
 }

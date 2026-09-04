@@ -11,6 +11,7 @@ export async function PATCH(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -37,13 +38,15 @@ export async function PATCH(
   }
 
   const category = await prisma.category.findUnique({
-    where: { id: categoryId },
+    where: { id: categoryId, organizationId },
   });
   if (!category) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
   }
 
-  const existing = await prisma.product.findUnique({ where: { sku } });
+  const existing = await prisma.product.findUnique({
+    where: { organizationId_sku: { organizationId, sku } },
+  });
   if (existing && existing.id !== id) {
     return NextResponse.json(
       { error: "A product with that SKU already exists" },
@@ -53,7 +56,7 @@ export async function PATCH(
 
   try {
     const product = await prisma.product.update({
-      where: { id },
+      where: { id, organizationId },
       data: { sku, name, unit, categoryId, reorderPoint, unitCostCents },
       include: { category: { select: { id: true, name: true } } },
     });
@@ -70,11 +73,12 @@ export async function DELETE(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
 
   try {
-    await prisma.product.delete({ where: { id } });
+    await prisma.product.delete({ where: { id, organizationId } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });

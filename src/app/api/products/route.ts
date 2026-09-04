@@ -32,6 +32,7 @@ export async function GET(request: Request) {
     : null;
 
   const conditions = [
+    { organizationId: session.user.activeOrganizationId },
     ...(categoryId ? [{ categoryId }] : []),
     ...(search
       ? [
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const body = await request.json().catch(() => null);
   const sku = typeof body?.sku === "string" ? body.sku.trim() : "";
@@ -126,13 +128,15 @@ export async function POST(request: Request) {
   }
 
   const category = await prisma.category.findUnique({
-    where: { id: categoryId },
+    where: { id: categoryId, organizationId },
   });
   if (!category) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
   }
 
-  const existing = await prisma.product.findUnique({ where: { sku } });
+  const existing = await prisma.product.findUnique({
+    where: { organizationId_sku: { organizationId, sku } },
+  });
   if (existing) {
     return NextResponse.json(
       { error: "A product with that SKU already exists" },
@@ -141,7 +145,7 @@ export async function POST(request: Request) {
   }
 
   const product = await prisma.product.create({
-    data: { sku, name, unit, categoryId, reorderPoint, unitCostCents },
+    data: { sku, name, unit, categoryId, reorderPoint, unitCostCents, organizationId },
     include: { category: { select: { id: true, name: true } } },
   });
   return NextResponse.json(product, { status: 201 });

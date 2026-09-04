@@ -9,6 +9,7 @@ export async function POST(request: Request) {
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const text = await request.text();
   if (!text.trim()) {
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   }
 
   const categories = await prisma.category.findMany({
+    where: { organizationId },
     select: { id: true, name: true },
   });
   const categoryIdByName = new Map(
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     const existing = await prisma.product.findUnique({
-      where: { sku: row.sku },
+      where: { organizationId_sku: { organizationId, sku: row.sku } },
       select: { id: true },
     });
 
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
       await prisma.product.update({ where: { id: existing.id }, data });
       updated++;
     } else {
-      await prisma.product.create({ data: { sku: row.sku, ...data } });
+      await prisma.product.create({ data: { sku: row.sku, organizationId, ...data } });
       created++;
     }
   }

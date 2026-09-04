@@ -15,6 +15,48 @@ enum Role {
   STAFF
 }
 
+// Per-organization role, distinct from the legacy global `Role` above.
+// `User.role` stays in place until the Week 19 route-protection migration
+// switches every ADMIN/STAFF check over to the active membership's role.
+enum MembershipRole {
+  OWNER
+  ADMIN
+  STOREKEEPER
+  STAFF
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships            Membership[]
+  categories             Category[]
+  products               Product[]
+  locations              Location[]
+  suppliers              Supplier[]
+  purchaseOrders         PurchaseOrder[]
+  purchaseOrderLineItems PurchaseOrderLineItem[]
+  stockLevels            StockLevel[]
+  stockTransactions      StockTransaction[]
+}
+
+model Membership {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  role           MembershipRole @default(STAFF)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
@@ -23,28 +65,36 @@ model User {
   role              Role               @default(STAFF)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  memberships       Membership[]
   stockTransactions StockTransaction[]
   purchaseOrders    PurchaseOrder[]
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
+  id             String       @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  products       Product[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
 }
 
 model Product {
   id                     String                  @id @default(cuid())
-  sku                    String                  @unique
+  sku                    String
   name                   String
   unit                   String
   reorderPoint           Int                     @default(0)
   unitCostCents          Int?
   categoryId             String
   category               Category                @relation(fields: [categoryId], references: [id])
+  organizationId         String
+  organization           Organization            @relation(fields: [organizationId], references: [id])
   stockLevels            StockLevel[]
   stockTransactions      StockTransaction[]
   purchaseOrderLineItems PurchaseOrderLineItem[]
@@ -54,32 +104,42 @@ model Product {
   // Trigram GIN indexes on name/sku for fast ILIKE search at scale are
   // managed via raw SQL in the add_search_indexes migration (Prisma's
   // schema language doesn't model pg_trgm operator classes).
+  @@unique([organizationId, sku])
   @@index([name])
   @@index([categoryId, name])
+  @@index([organizationId])
 }
 
 model Location {
   id                String             @id @default(cuid())
-  name              String             @unique
+  name              String
   address           String?
+  organizationId    String
+  organization      Organization       @relation(fields: [organizationId], references: [id])
   stockLevels       StockLevel[]
   stockTransactions StockTransaction[]
   purchaseOrders    PurchaseOrder[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
 }
 
 model StockLevel {
-  id         String   @id @default(cuid())
-  quantity   Int      @default(0)
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id])
-  updatedAt  DateTime @updatedAt
+  id             String       @id @default(cuid())
+  quantity       Int          @default(0)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  locationId     String
+  location       Location     @relation(fields: [locationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  updatedAt      DateTime     @updatedAt
 
   @@unique([productId, locationId])
   @@index([locationId])
+  @@index([organizationId])
 }
 
 enum StockTransactionType {
@@ -91,14 +151,19 @@ enum StockTransactionType {
 
 model Supplier {
   id             String          @id @default(cuid())
-  name           String          @unique
+  name           String
   contactName    String?
   email          String?
   phone          String?
   address        String?
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   purchaseOrders PurchaseOrder[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
 }
 
 enum PurchaseOrderStatus {
@@ -109,27 +174,30 @@ enum PurchaseOrderStatus {
 }
 
 model PurchaseOrder {
-  id          String                  @id @default(cuid())
-  status      PurchaseOrderStatus     @default(DRAFT)
-  supplierId  String
-  supplier    Supplier                @relation(fields: [supplierId], references: [id])
+  id             String                  @id @default(cuid())
+  status         PurchaseOrderStatus     @default(DRAFT)
+  supplierId     String
+  supplier       Supplier                @relation(fields: [supplierId], references: [id])
   // The location stock is received into when this order is marked RECEIVED.
   // Nullable so the column can be added without a backfill; the API
   // requires it when creating a new purchase order.
-  locationId  String?
-  location    Location?               @relation(fields: [locationId], references: [id])
-  note        String?
-  createdById String
-  createdBy   User                    @relation(fields: [createdById], references: [id])
-  submittedAt DateTime?
-  receivedAt  DateTime?
-  lineItems   PurchaseOrderLineItem[]
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
+  locationId     String?
+  location       Location?               @relation(fields: [locationId], references: [id])
+  organizationId String
+  organization   Organization            @relation(fields: [organizationId], references: [id])
+  note           String?
+  createdById    String
+  createdBy      User                    @relation(fields: [createdById], references: [id])
+  submittedAt    DateTime?
+  receivedAt     DateTime?
+  lineItems      PurchaseOrderLineItem[]
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
 
   @@index([supplierId])
   @@index([status])
   @@index([locationId])
+  @@index([organizationId])
 }
 
 model PurchaseOrderLineItem {
@@ -138,6 +206,8 @@ model PurchaseOrderLineItem {
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   productId       String
   product         Product       @relation(fields: [productId], references: [id])
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
   quantity        Int
   unitCostCents   Int?
   createdAt       DateTime      @default(now())
@@ -145,22 +215,26 @@ model PurchaseOrderLineItem {
 
   @@index([purchaseOrderId])
   @@index([productId])
+  @@index([organizationId])
 }
 
 model StockTransaction {
-  id          String               @id @default(cuid())
-  type        StockTransactionType
-  quantity    Int
-  productId   String
-  product     Product              @relation(fields: [productId], references: [id])
-  locationId  String
-  location    Location             @relation(fields: [locationId], references: [id])
-  note        String?
-  createdById String
-  createdBy   User                 @relation(fields: [createdById], references: [id])
-  createdAt   DateTime             @default(now())
+  id             String               @id @default(cuid())
+  type           StockTransactionType
+  quantity       Int
+  productId      String
+  product        Product              @relation(fields: [productId], references: [id])
+  locationId     String
+  location       Location             @relation(fields: [locationId], references: [id])
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+  note           String?
+  createdById    String
+  createdBy      User                 @relation(fields: [createdById], references: [id])
+  createdAt      DateTime             @default(now())
 
   @@index([productId])
   @@index([locationId])
   @@index([createdAt])
+  @@index([organizationId])
 }

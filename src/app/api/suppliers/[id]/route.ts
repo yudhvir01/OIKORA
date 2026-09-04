@@ -11,6 +11,7 @@ export async function PATCH(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -36,7 +37,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const existing = await prisma.supplier.findUnique({ where: { name } });
+  const existing = await prisma.supplier.findUnique({
+    where: { organizationId_name: { organizationId, name } },
+  });
   if (existing && existing.id !== id) {
     return NextResponse.json(
       { error: "A supplier with that name already exists" },
@@ -46,7 +49,7 @@ export async function PATCH(
 
   try {
     const supplier = await prisma.supplier.update({
-      where: { id },
+      where: { id, organizationId },
       data: { name, contactName, email, phone, address },
     });
     return NextResponse.json(supplier);
@@ -62,11 +65,12 @@ export async function DELETE(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
+  const organizationId = session!.user.activeOrganizationId;
 
   const { id } = await params;
 
   try {
-    await prisma.supplier.delete({ where: { id } });
+    await prisma.supplier.delete({ where: { id, organizationId } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Supplier not found" }, { status: 404 });

@@ -95,6 +95,13 @@ const LOCATIONS = [
 ];
 
 async function main() {
+  const org = await prisma.organization.upsert({
+    where: { slug: "default" },
+    update: {},
+    create: { name: "Default Organization", slug: "default" },
+  });
+  const organizationId = org.id;
+
   const userIds = new Map<string, string>();
   for (const user of USERS) {
     const passwordHash = await bcrypt.hash(user.password, 10);
@@ -109,15 +116,24 @@ async function main() {
       },
     });
     userIds.set(user.email, record.id);
+    await prisma.membership.upsert({
+      where: { userId_organizationId: { userId: record.id, organizationId } },
+      update: {},
+      create: {
+        userId: record.id,
+        organizationId,
+        role: user.role === "ADMIN" ? "OWNER" : "STAFF",
+      },
+    });
   }
   console.log(`Seeded ${USERS.length} users.`);
 
   const categoryIds = new Map<string, string>();
   for (const category of CATEGORIES) {
     const record = await prisma.category.upsert({
-      where: { name: category.name },
+      where: { organizationId_name: { organizationId, name: category.name } },
       update: { description: category.description },
-      create: category,
+      create: { ...category, organizationId },
     });
     categoryIds.set(category.name, record.id);
   }
@@ -126,9 +142,9 @@ async function main() {
   const locationIds = new Map<string, string>();
   for (const location of LOCATIONS) {
     const record = await prisma.location.upsert({
-      where: { name: location.name },
+      where: { organizationId_name: { organizationId, name: location.name } },
       update: { address: location.address },
-      create: location,
+      create: { ...location, organizationId },
     });
     locationIds.set(location.name, record.id);
   }
@@ -141,7 +157,7 @@ async function main() {
       throw new Error(`Unknown category "${product.category}" for product ${product.sku}`);
     }
     const record = await prisma.product.upsert({
-      where: { sku: product.sku },
+      where: { organizationId_sku: { organizationId, sku: product.sku } },
       update: {
         name: product.name,
         unit: product.unit,
@@ -156,6 +172,7 @@ async function main() {
         reorderPoint: product.reorderPoint,
         unitCostCents: product.unitCostCents,
         categoryId,
+        organizationId,
       },
     });
     productIds.set(product.sku, record.id);
@@ -189,7 +206,7 @@ async function main() {
     const productId = productIds.get(sku)!;
     await prisma.stockLevel.upsert({
       where: { productId_locationId: { productId, locationId } },
-      create: { productId, locationId, quantity },
+      create: { productId, locationId, quantity, organizationId },
       update: { quantity: { increment: quantity } },
     });
     await prisma.stockTransaction.create({
@@ -198,6 +215,7 @@ async function main() {
         quantity,
         productId,
         locationId,
+        organizationId,
         note,
         createdById,
         createdAt,
@@ -224,6 +242,7 @@ async function main() {
         quantity,
         productId,
         locationId,
+        organizationId,
         note,
         createdById,
         createdAt,
@@ -247,7 +266,7 @@ async function main() {
     });
     await prisma.stockLevel.upsert({
       where: { productId_locationId: { productId, locationId: toLocationId } },
-      create: { productId, locationId: toLocationId, quantity },
+      create: { productId, locationId: toLocationId, quantity, organizationId },
       update: { quantity: { increment: quantity } },
     });
     await prisma.stockTransaction.create({
@@ -256,6 +275,7 @@ async function main() {
         quantity,
         productId,
         locationId: fromLocationId,
+        organizationId,
         note,
         createdById,
         createdAt,
@@ -267,6 +287,7 @@ async function main() {
         quantity,
         productId,
         locationId: toLocationId,
+        organizationId,
         note,
         createdById,
         createdAt,

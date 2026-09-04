@@ -74,16 +74,16 @@ the tech-stack review (background jobs, pre-aggregated analytics, hardening)
 into scheduled work instead of "fix it when it hurts."
 
 ### Week 18 — Multi-tenancy data model
-- [ ] `Organization` model (the tenant/company): `id`, `name`, `slug`,
+- [x] `Organization` model (the tenant/company): `id`, `name`, `slug`,
       timestamps
-- [ ] `Membership` join table: `User` ↔ `Organization` with a `role` enum
+- [x] `Membership` join table: `User` ↔ `Organization` with a `role` enum
       (`OWNER` / `ADMIN` / `STOREKEEPER` / `STAFF`), `@@unique([userId,
       organizationId])` — replaces today's global `Role` enum on `User`
       (a user's permissions are now per-organization, not global)
-- [ ] `organizationId` added to every business table (`Product`, `Category`,
+- [x] `organizationId` added to every business table (`Product`, `Category`,
       `Location`, `Supplier`, `PurchaseOrder`, `PurchaseOrderLineItem`,
       `StockLevel`, `StockTransaction`) with the FK indexed on every table
-- [ ] Data migration: create one "Default Organization," attach every
+- [x] Data migration: create one "Default Organization," attach every
       existing `User` to it via `Membership` (existing `ADMIN` → `OWNER`,
       existing `STAFF` → `STAFF`), and backfill `organizationId` on every
       existing row to that org — run and verified against the dev database
@@ -93,9 +93,15 @@ into scheduled work instead of "fix it when it hurts."
       applied per-request from the active org in session — this is the
       "can't forget it" mechanism, not a convention every route has to
       remember; routes call a scoped client (e.g. `scopedDb(orgId)`) instead
-      of the raw `prisma` export for anything tenant-scoped
-- [ ] Session/JWT extended with `activeOrganizationId`; a server action to
-      switch it (re-issues the session) for users in more than one org
+      of the raw `prisma` export for anything tenant-scoped. Every route is
+      manually scoped by `organizationId` today (correct, but relies on each
+      route remembering to do it) — the extension is what makes that
+      unforgettable.
+- [ ] Session/JWT extended with `activeOrganizationId` (done — pinned to the
+      user's earliest membership at login); a server action to switch it
+      (re-issues the session) for users in more than one org (not done — no
+      user can belong to more than one org yet, since Team invites are a
+      Week 19 item, so there's nothing to switch between)
 
 ### Week 19 — Org switcher, RBAC & tenancy hardening
 - [ ] Org switcher in the nav (next to the account menu): lists every

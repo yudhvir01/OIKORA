@@ -33,11 +33,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // Users can belong to more than one org (Week 19 org switcher), but
+        // until that ships, the session pins to the earliest membership.
+        const membership = await prisma.membership.findFirst({
+          where: { userId: user.id },
+          orderBy: { createdAt: "asc" },
+        });
+        if (!membership) {
+          return null;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          activeOrganizationId: membership.organizationId,
         };
       },
     }),
@@ -47,6 +58,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = user.role;
         token.id = user.id as string;
+        token.activeOrganizationId = user.activeOrganizationId;
       }
       return token;
     },
@@ -54,6 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "ADMIN" | "STAFF";
+        session.user.activeOrganizationId = token.activeOrganizationId;
       }
       return session;
     },

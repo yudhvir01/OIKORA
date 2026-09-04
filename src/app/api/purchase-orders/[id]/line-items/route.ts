@@ -13,9 +13,10 @@ export async function POST(
   }
 
   const { id: purchaseOrderId } = await params;
+  const organizationId = session.user.activeOrganizationId;
 
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId },
+    where: { id: purchaseOrderId, organizationId },
   });
   if (!purchaseOrder) {
     return NextResponse.json(
@@ -62,14 +63,14 @@ export async function POST(
   }
 
   const product = await prisma.product.findUnique({
-    where: { id: productId },
+    where: { id: productId, organizationId },
   });
   if (!product) {
     return NextResponse.json({ error: "Product not found" }, { status: 400 });
   }
 
   const lineItem = await prisma.purchaseOrderLineItem.create({
-    data: { purchaseOrderId, productId, quantity, unitCostCents },
+    data: { purchaseOrderId, productId, quantity, unitCostCents, organizationId },
     include: {
       product: { select: { id: true, sku: true, name: true, unit: true } },
     },
