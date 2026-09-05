@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { canTransitionPurchaseOrderStatus } from "@/lib/purchase-order-status";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 const INCLUDE = {
   supplier: { select: { id: true, name: true } },
@@ -30,8 +30,9 @@ export async function GET(
   }
 
   const { id } = await params;
-  const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id, organizationId: session.user.activeOrganizationId },
+  const db = scopedDb(session.user.activeOrganizationId);
+  const purchaseOrder = await db.purchaseOrder.findUnique({
+    where: { id },
     include: INCLUDE_WITH_LINE_ITEMS,
   });
   if (!purchaseOrder) {
@@ -63,8 +64,9 @@ export async function PATCH(
     );
   }
 
-  const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id, organizationId: session.user.activeOrganizationId },
+  const db = scopedDb(session.user.activeOrganizationId);
+  const purchaseOrder = await db.purchaseOrder.findUnique({
+    where: { id },
   });
   if (!purchaseOrder) {
     return NextResponse.json(
@@ -82,7 +84,7 @@ export async function PATCH(
     );
   }
 
-  const updated = await prisma.purchaseOrder.update({
+  const updated = await db.purchaseOrder.update({
     where: { id },
     data: {
       status: status as "SUBMITTED" | "CANCELLED",

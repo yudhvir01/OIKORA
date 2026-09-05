@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb, type ScopedPrismaClient } from "@/lib/scoped-db";
 
 async function loadDraftLineItem(
+  db: ScopedPrismaClient,
   purchaseOrderId: string,
   lineItemId: string,
 ) {
-  const lineItem = await prisma.purchaseOrderLineItem.findUnique({
+  const lineItem = await db.purchaseOrderLineItem.findUnique({
     where: { id: lineItemId },
     include: { purchaseOrder: true },
   });
@@ -34,7 +35,9 @@ export async function PATCH(
   }
 
   const { id: purchaseOrderId, lineItemId } = await params;
+  const db = scopedDb(session.user.activeOrganizationId);
   const { error, status } = await loadDraftLineItem(
+    db,
     purchaseOrderId,
     lineItemId,
   );
@@ -65,7 +68,7 @@ export async function PATCH(
     );
   }
 
-  const updated = await prisma.purchaseOrderLineItem.update({
+  const updated = await db.purchaseOrderLineItem.update({
     where: { id: lineItemId },
     data: { quantity, unitCostCents },
     include: {
@@ -86,7 +89,9 @@ export async function DELETE(
   }
 
   const { id: purchaseOrderId, lineItemId } = await params;
+  const db = scopedDb(session.user.activeOrganizationId);
   const { error, status } = await loadDraftLineItem(
+    db,
     purchaseOrderId,
     lineItemId,
   );
@@ -94,6 +99,6 @@ export async function DELETE(
     return NextResponse.json({ error }, { status });
   }
 
-  await prisma.purchaseOrderLineItem.delete({ where: { id: lineItemId } });
+  await db.purchaseOrderLineItem.delete({ where: { id: lineItemId } });
   return new NextResponse(null, { status: 204 });
 }

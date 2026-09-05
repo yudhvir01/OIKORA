@@ -1,8 +1,11 @@
+import { auth } from "@/auth";
 import { CategoryManager } from "@/components/category-manager";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function CategoriesPage() {
-  const categories = await prisma.category.findMany({
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
+  const categories = await db.category.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true, description: true },
   });

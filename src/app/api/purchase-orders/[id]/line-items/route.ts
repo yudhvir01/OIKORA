@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function POST(
   request: Request,
@@ -14,9 +14,10 @@ export async function POST(
 
   const { id: purchaseOrderId } = await params;
   const organizationId = session.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
-  const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, organizationId },
+  const purchaseOrder = await db.purchaseOrder.findUnique({
+    where: { id: purchaseOrderId },
   });
   if (!purchaseOrder) {
     return NextResponse.json(
@@ -62,14 +63,14 @@ export async function POST(
     );
   }
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId, organizationId },
+  const product = await db.product.findUnique({
+    where: { id: productId },
   });
   if (!product) {
     return NextResponse.json({ error: "Product not found" }, { status: 400 });
   }
 
-  const lineItem = await prisma.purchaseOrderLineItem.create({
+  const lineItem = await db.purchaseOrderLineItem.create({
     data: { purchaseOrderId, productId, quantity, unitCostCents, organizationId },
     include: {
       product: { select: { id: true, sku: true, name: true, unit: true } },

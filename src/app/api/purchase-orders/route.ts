@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 const INCLUDE = {
   supplier: { select: { id: true, name: true } },
@@ -27,10 +27,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = parseStatus(searchParams.get("status"));
   const supplierId = searchParams.get("supplierId") ?? undefined;
+  const db = scopedDb(session.user.activeOrganizationId);
 
-  const purchaseOrders = await prisma.purchaseOrder.findMany({
+  const purchaseOrders = await db.purchaseOrder.findMany({
     where: {
-      organizationId: session.user.activeOrganizationId,
       ...(status ? { status } : {}),
       ...(supplierId ? { supplierId } : {}),
     },
@@ -71,9 +71,10 @@ export async function POST(request: Request) {
   }
 
   const organizationId = session.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
   const [supplier, location] = await Promise.all([
-    prisma.supplier.findUnique({ where: { id: supplierId, organizationId } }),
-    prisma.location.findUnique({ where: { id: locationId, organizationId } }),
+    db.supplier.findUnique({ where: { id: supplierId } }),
+    db.location.findUnique({ where: { id: locationId } }),
   ]);
   if (!supplier) {
     return NextResponse.json({ error: "Supplier not found" }, { status: 400 });
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Location not found" }, { status: 400 });
   }
 
-  const purchaseOrder = await prisma.purchaseOrder.create({
+  const purchaseOrder = await db.purchaseOrder.create({
     data: {
       supplierId,
       locationId,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 import { getPurchaseOrderReceiveError } from "@/lib/purchase-order-receive";
 
 const INCLUDE = {
@@ -27,9 +27,10 @@ export async function POST(
 
   const { id } = await params;
   const organizationId = session.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
-  const purchaseOrder = await prisma.purchaseOrder.findUnique({
-    where: { id, organizationId },
+  const purchaseOrder = await db.purchaseOrder.findUnique({
+    where: { id },
     include: { lineItems: true },
   });
   if (!purchaseOrder) {
@@ -46,7 +47,7 @@ export async function POST(
   const locationId = purchaseOrder.locationId as string;
   const note = `Received via purchase order ${purchaseOrder.id}`;
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await db.$transaction(async (tx) => {
     for (const lineItem of purchaseOrder.lineItems) {
       await tx.stockLevel.upsert({
         where: {

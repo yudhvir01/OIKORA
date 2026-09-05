@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET(
   request: Request,
@@ -11,10 +11,11 @@ export async function GET(
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
   const { id: productId } = await params;
 
-  const product = await prisma.product.findUnique({
+  const product = await db.product.findUnique({
     where: { id: productId },
   });
   if (!product) {
@@ -31,7 +32,7 @@ export async function GET(
   const where = { productId };
 
   const [transactions, total] = await Promise.all([
-    prisma.stockTransaction.findMany({
+    db.stockTransaction.findMany({
       where,
       include: {
         location: { select: { id: true, name: true } },
@@ -41,7 +42,7 @@ export async function GET(
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
-    prisma.stockTransaction.count({ where }),
+    db.stockTransaction.count({ where }),
   ]);
 
   return NextResponse.json({

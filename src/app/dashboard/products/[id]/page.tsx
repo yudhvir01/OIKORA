@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import { ProductTransactionHistory } from "@/components/product-transaction-history";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function ProductDetailPage({
   params,
@@ -10,8 +11,10 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
 
-  const product = await prisma.product.findUnique({
+  const product = await db.product.findUnique({
     where: { id },
     include: {
       category: { select: { id: true, name: true } },

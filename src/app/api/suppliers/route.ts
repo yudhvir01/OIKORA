@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
-  const suppliers = await prisma.supplier.findMany({
-    where: { organizationId: session.user.activeOrganizationId },
+  const suppliers = await db.supplier.findMany({
     orderBy: { name: "asc" },
   });
   return NextResponse.json(suppliers);
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const existing = await prisma.supplier.findUnique({
+  const existing = await db.supplier.findUnique({
     where: { organizationId_name: { organizationId, name } },
   });
   if (existing) {
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const supplier = await prisma.supplier.create({
+  const supplier = await db.supplier.create({
     data: { name, contactName, email, phone, address, organizationId },
   });
   return NextResponse.json(supplier, { status: 201 });

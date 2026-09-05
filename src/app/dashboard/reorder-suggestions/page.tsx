@@ -1,7 +1,9 @@
+import { auth } from "@/auth";
 import { getReorderSuggestions } from "@/lib/reorder-suggestions";
 
 export default async function ReorderSuggestionsPage() {
-  const suggestions = await getReorderSuggestions();
+  const session = await auth();
+  const suggestions = await getReorderSuggestions(session!.user.activeOrganizationId);
 
   return (
     <div className="flex flex-col gap-6">

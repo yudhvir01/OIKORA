@@ -1,24 +1,27 @@
+import { auth } from "@/auth";
 import { StockManager } from "@/components/stock-manager";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function StockPage() {
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
   const [products, locations, stockLevels, transactions] = await Promise.all([
-    prisma.product.findMany({
+    db.product.findMany({
       orderBy: { name: "asc" },
       select: { id: true, sku: true, name: true },
     }),
-    prisma.location.findMany({
+    db.location.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.stockLevel.findMany({
+    db.stockLevel.findMany({
       include: {
         product: { select: { id: true, sku: true, name: true } },
         location: { select: { id: true, name: true } },
       },
       orderBy: [{ product: { name: "asc" } }, { location: { name: "asc" } }],
     }),
-    prisma.stockTransaction.findMany({
+    db.stockTransaction.findMany({
       include: {
         product: { select: { id: true, sku: true, name: true } },
         location: { select: { id: true, name: true } },

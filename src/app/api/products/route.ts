@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search")?.trim() ?? "";
@@ -32,7 +33,6 @@ export async function GET(request: Request) {
     : null;
 
   const conditions = [
-    { organizationId: session.user.activeOrganizationId },
     ...(categoryId ? [{ categoryId }] : []),
     ...(search
       ? [
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
   // Keyset (cursor) pagination instead of OFFSET: Postgres seeks directly
   // via the (name, id) index rather than scanning and discarding every
   // prior row, so this stays fast regardless of how deep the page is.
-  const products = await prisma.product.findMany({
+  const products = await db.product.findMany({
     where,
     include: { category: { select: { id: true, name: true } } },
     orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
   const nextCursor = hasMore && last ? `${last.name}::${last.id}` : null;
 
   const stockTotals = page.length
-    ? await prisma.stockLevel.groupBy({
+    ? await db.stockLevel.groupBy({
         by: ["productId"],
         where: { productId: { in: page.map((p) => p.id) } },
         _sum: { quantity: true },
@@ -103,6 +103,7 @@ export async function POST(request: Request) {
   const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const body = await request.json().catch(() => null);
   const sku = typeof body?.sku === "string" ? body.sku.trim() : "";
@@ -127,14 +128,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const category = await prisma.category.findUnique({
-    where: { id: categoryId, organizationId },
+  const category = await db.category.findUnique({
+    where: { id: categoryId },
   });
   if (!category) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
   }
 
-  const existing = await prisma.product.findUnique({
+  const existing = await db.product.findUnique({
     where: { organizationId_sku: { organizationId, sku } },
   });
   if (existing) {
@@ -144,7 +145,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const product = await prisma.product.create({
+  const product = await db.product.create({
     data: { sku, name, unit, categoryId, reorderPoint, unitCostCents, organizationId },
     include: { category: { select: { id: true, name: true } } },
   });

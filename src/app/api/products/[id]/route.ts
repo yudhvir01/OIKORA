@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function PATCH(
   request: Request,
@@ -12,6 +12,7 @@ export async function PATCH(
   const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -37,14 +38,14 @@ export async function PATCH(
     );
   }
 
-  const category = await prisma.category.findUnique({
-    where: { id: categoryId, organizationId },
+  const category = await db.category.findUnique({
+    where: { id: categoryId },
   });
   if (!category) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
   }
 
-  const existing = await prisma.product.findUnique({
+  const existing = await db.product.findUnique({
     where: { organizationId_sku: { organizationId, sku } },
   });
   if (existing && existing.id !== id) {
@@ -55,8 +56,8 @@ export async function PATCH(
   }
 
   try {
-    const product = await prisma.product.update({
-      where: { id, organizationId },
+    const product = await db.product.update({
+      where: { id },
       data: { sku, name, unit, categoryId, reorderPoint, unitCostCents },
       include: { category: { select: { id: true, name: true } } },
     });
@@ -73,12 +74,12 @@ export async function DELETE(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
-  const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(session!.user.activeOrganizationId);
 
   const { id } = await params;
 
   try {
-    await prisma.product.delete({ where: { id, organizationId } });
+    await db.product.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });

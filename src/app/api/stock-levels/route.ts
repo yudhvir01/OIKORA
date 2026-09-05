@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get("productId") ?? undefined;
   const locationId = searchParams.get("locationId") ?? undefined;
 
-  const stockLevels = await prisma.stockLevel.findMany({
+  const stockLevels = await db.stockLevel.findMany({
     where: {
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),

@@ -1,8 +1,11 @@
+import { auth } from "@/auth";
 import { ProductList } from "@/components/product-list";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function ProductsPage() {
-  const categories = await prisma.category.findMany({
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
+  const categories = await db.category.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });

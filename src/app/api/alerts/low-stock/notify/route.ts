@@ -21,7 +21,7 @@ export async function POST() {
     );
   }
 
-  const products = await getLowStockProducts();
+  const products = await getLowStockProducts(session!.user.activeOrganizationId);
   if (products.length === 0) {
     return NextResponse.json({ sent: false, count: 0 });
   }

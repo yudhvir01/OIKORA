@@ -9,6 +9,6 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const suggestions = await getReorderSuggestions();
+  const suggestions = await getReorderSuggestions(session.user.activeOrganizationId);
   return NextResponse.json({ suggestions });
 }

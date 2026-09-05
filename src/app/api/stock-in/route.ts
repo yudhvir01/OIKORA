@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 import { validateStockMovementInput } from "@/lib/stock-movement";
 
 export async function GET(request: Request) {
@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get("productId") ?? undefined;
@@ -18,10 +19,9 @@ export async function GET(request: Request) {
     Math.max(1, Number(searchParams.get("limit")) || 20),
   );
 
-  const transactions = await prisma.stockTransaction.findMany({
+  const transactions = await db.stockTransaction.findMany({
     where: {
       type: "STOCK_IN",
-      organizationId: session.user.activeOrganizationId,
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),
     },
@@ -50,10 +50,11 @@ export async function POST(request: Request) {
   }
   const { productId, locationId, quantity, note } = validated.data;
   const organizationId = session.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const [product, location] = await Promise.all([
-    prisma.product.findUnique({ where: { id: productId, organizationId } }),
-    prisma.location.findUnique({ where: { id: locationId, organizationId } }),
+    db.product.findUnique({ where: { id: productId } }),
+    db.location.findUnique({ where: { id: locationId } }),
   ]);
 
   if (!product) {
@@ -63,13 +64,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Location not found" }, { status: 400 });
   }
 
-  const [stockLevel, transaction] = await prisma.$transaction([
-    prisma.stockLevel.upsert({
+  const [stockLevel, transaction] = await db.$transaction([
+    db.stockLevel.upsert({
       where: { productId_locationId: { productId, locationId } },
       create: { productId, locationId, quantity, organizationId },
       update: { quantity: { increment: quantity } },
     }),
-    prisma.stockTransaction.create({
+    db.stockTransaction.create({
       data: {
         type: "STOCK_IN",
         quantity,

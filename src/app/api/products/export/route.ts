@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { csvResponse, toCsv } from "@/lib/csv";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET() {
   const session = await auth();
@@ -10,13 +10,14 @@ export async function GET() {
       headers: { "Content-Type": "application/json" },
     });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
-  const products = await prisma.product.findMany({
+  const products = await db.product.findMany({
     include: { category: { select: { name: true } } },
     orderBy: { name: "asc" },
   });
 
-  const stockTotals = await prisma.stockLevel.groupBy({
+  const stockTotals = await db.stockLevel.groupBy({
     by: ["productId"],
     _sum: { quantity: true },
   });

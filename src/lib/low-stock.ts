@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export type LowStockProduct = {
   id: string;
@@ -12,14 +12,17 @@ export type LowStockProduct = {
 // Products whose stock (summed across all locations) has fallen below
 // their reorder point. `reorderPoint = 0` means "no alerting configured
 // for this product", so those are excluded even at zero stock.
-export async function getLowStockProducts(): Promise<LowStockProduct[]> {
-  const products = await prisma.product.findMany({
+export async function getLowStockProducts(
+  organizationId: string,
+): Promise<LowStockProduct[]> {
+  const db = scopedDb(organizationId);
+  const products = await db.product.findMany({
     where: { reorderPoint: { gt: 0 } },
     select: { id: true, sku: true, name: true, unit: true, reorderPoint: true },
   });
   if (products.length === 0) return [];
 
-  const stockTotals = await prisma.stockLevel.groupBy({
+  const stockTotals = await db.stockLevel.groupBy({
     by: ["productId"],
     where: { productId: { in: products.map((p) => p.id) } },
     _sum: { quantity: true },

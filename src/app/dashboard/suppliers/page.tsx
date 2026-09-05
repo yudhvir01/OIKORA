@@ -1,8 +1,11 @@
+import { auth } from "@/auth";
 import { SupplierManager } from "@/components/supplier-manager";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function SuppliersPage() {
-  const suppliers = await prisma.supplier.findMany({
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
+  const suppliers = await db.supplier.findMany({
     orderBy: { name: "asc" },
   });
 

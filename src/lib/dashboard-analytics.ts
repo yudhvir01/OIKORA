@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export type TopMovedProduct = {
   productId: string;
@@ -11,12 +11,14 @@ export type TopMovedProduct = {
 // quantity) in the trailing `days` days. A proxy for "what's busy" until
 // there's a dedicated activity metric.
 export async function getTopMovedProducts(
+  organizationId: string,
   days: number,
   limit: number,
 ): Promise<TopMovedProduct[]> {
+  const db = scopedDb(organizationId);
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const totals = await prisma.stockTransaction.groupBy({
+  const totals = await db.stockTransaction.groupBy({
     by: ["productId"],
     where: { createdAt: { gte: since } },
     _sum: { quantity: true },
@@ -25,7 +27,7 @@ export async function getTopMovedProducts(
   });
   if (totals.length === 0) return [];
 
-  const products = await prisma.product.findMany({
+  const products = await db.product.findMany({
     where: { id: { in: totals.map((t) => t.productId) } },
     select: { id: true, sku: true, name: true },
   });
@@ -55,12 +57,14 @@ export type MovementTrendDay = {
 // oldest first. Transfers are excluded since they don't change total
 // stock on hand, only its location.
 export async function getMovementTrend(
+  organizationId: string,
   days: number,
 ): Promise<MovementTrendDay[]> {
+  const db = scopedDb(organizationId);
   const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000);
   since.setHours(0, 0, 0, 0);
 
-  const transactions = await prisma.stockTransaction.findMany({
+  const transactions = await db.stockTransaction.findMany({
     where: {
       createdAt: { gte: since },
       type: { in: ["STOCK_IN", "STOCK_OUT"] },
@@ -93,8 +97,9 @@ export async function getMovementTrend(
 // quantity * the owning product's unitCostCents. Products without a cost
 // set don't contribute (treated as unpriced, not free), so the total is a
 // lower bound whenever some products are missing a cost.
-export async function getStockValueCents(): Promise<number> {
-  const levels = await prisma.stockLevel.findMany({
+export async function getStockValueCents(organizationId: string): Promise<number> {
+  const db = scopedDb(organizationId);
+  const levels = await db.stockLevel.findMany({
     where: { product: { unitCostCents: { not: null } } },
     select: { quantity: true, product: { select: { unitCostCents: true } } },
   });

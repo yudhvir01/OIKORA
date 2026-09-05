@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 import { getLowStockProducts, type LowStockProduct } from "@/lib/low-stock";
 
 export type ReorderSuggestion = LowStockProduct & {
@@ -8,11 +8,14 @@ export type ReorderSuggestion = LowStockProduct & {
 // Low-stock products paired with a suggested supplier: whoever they were
 // last ordered from, inferred from purchase order line item history. A
 // product that has never appeared on a purchase order has no suggestion.
-export async function getReorderSuggestions(): Promise<ReorderSuggestion[]> {
-  const lowStockProducts = await getLowStockProducts();
+export async function getReorderSuggestions(
+  organizationId: string,
+): Promise<ReorderSuggestion[]> {
+  const db = scopedDb(organizationId);
+  const lowStockProducts = await getLowStockProducts(organizationId);
   if (lowStockProducts.length === 0) return [];
 
-  const lineItems = await prisma.purchaseOrderLineItem.findMany({
+  const lineItems = await db.purchaseOrderLineItem.findMany({
     where: { productId: { in: lowStockProducts.map((p) => p.id) } },
     select: {
       productId: true,

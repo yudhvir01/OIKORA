@@ -88,7 +88,7 @@ into scheduled work instead of "fix it when it hurts."
       existing `STAFF` → `STAFF`), and backfill `organizationId` on every
       existing row to that org — run and verified against the dev database
       before moving on
-- [ ] A Prisma Client Extension (`$extends`) that auto-injects
+- [x] A Prisma Client Extension (`$extends`) that auto-injects
       `organizationId` into `where` clauses for every tenant-scoped model,
       applied per-request from the active org in session — this is the
       "can't forget it" mechanism, not a convention every route has to

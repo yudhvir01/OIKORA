@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { csvResponse, toCsv } from "@/lib/csv";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -10,12 +10,13 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "application/json" },
     });
   }
+  const db = scopedDb(session.user.activeOrganizationId);
 
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get("productId") ?? undefined;
   const locationId = searchParams.get("locationId") ?? undefined;
 
-  const transactions = await prisma.stockTransaction.findMany({
+  const transactions = await db.stockTransaction.findMany({
     where: {
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),

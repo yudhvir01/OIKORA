@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 import { parseProductsCsv, type ProductRowError } from "@/lib/product-import";
 
 export async function POST(request: Request) {
@@ -10,6 +10,7 @@ export async function POST(request: Request) {
   const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const text = await request.text();
   if (!text.trim()) {
@@ -24,8 +25,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const categories = await prisma.category.findMany({
-    where: { organizationId },
+  const categories = await db.category.findMany({
     select: { id: true, name: true },
   });
   const categoryIdByName = new Map(
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const existing = await prisma.product.findUnique({
+    const existing = await db.product.findUnique({
       where: { organizationId_sku: { organizationId, sku: row.sku } },
       select: { id: true },
     });
@@ -60,10 +60,10 @@ export async function POST(request: Request) {
     };
 
     if (existing) {
-      await prisma.product.update({ where: { id: existing.id }, data });
+      await db.product.update({ where: { id: existing.id }, data });
       updated++;
     } else {
-      await prisma.product.create({ data: { sku: row.sku, organizationId, ...data } });
+      await db.product.create({ data: { sku: row.sku, organizationId, ...data } });
       created++;
     }
   }

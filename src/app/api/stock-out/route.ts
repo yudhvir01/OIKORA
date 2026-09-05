@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 import { validateStockMovementInput } from "@/lib/stock-movement";
 
 class InsufficientStockError extends Error {
@@ -16,6 +16,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const db = scopedDb(session.user.activeOrganizationId);
+
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get("productId") ?? undefined;
   const locationId = searchParams.get("locationId") ?? undefined;
@@ -24,10 +26,9 @@ export async function GET(request: Request) {
     Math.max(1, Number(searchParams.get("limit")) || 20),
   );
 
-  const transactions = await prisma.stockTransaction.findMany({
+  const transactions = await db.stockTransaction.findMany({
     where: {
       type: "STOCK_OUT",
-      organizationId: session.user.activeOrganizationId,
       ...(productId ? { productId } : {}),
       ...(locationId ? { locationId } : {}),
     },
@@ -56,10 +57,11 @@ export async function POST(request: Request) {
   }
   const { productId, locationId, quantity, note } = validated.data;
   const organizationId = session.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const [product, location] = await Promise.all([
-    prisma.product.findUnique({ where: { id: productId, organizationId } }),
-    prisma.location.findUnique({ where: { id: locationId, organizationId } }),
+    db.product.findUnique({ where: { id: productId } }),
+    db.location.findUnique({ where: { id: locationId } }),
   ]);
 
   if (!product) {
@@ -70,9 +72,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
       const { count } = await tx.stockLevel.updateMany({
-        where: { productId, locationId, organizationId, quantity: { gte: quantity } },
+        where: { productId, locationId, quantity: { gte: quantity } },
         data: { quantity: { decrement: quantity } },
       });
 

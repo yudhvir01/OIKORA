@@ -1,8 +1,11 @@
+import { auth } from "@/auth";
 import { LocationManager } from "@/components/location-manager";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export default async function LocationsPage() {
-  const locations = await prisma.location.findMany({
+  const session = await auth();
+  const db = scopedDb(session!.user.activeOrganizationId);
+  const locations = await db.location.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true, address: true },
   });

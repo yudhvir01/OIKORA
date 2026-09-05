@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { scopedDb } from "@/lib/scoped-db";
 
 export async function PATCH(
   request: Request,
@@ -12,6 +12,7 @@ export async function PATCH(
   const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -25,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const existing = await prisma.location.findUnique({
+  const existing = await db.location.findUnique({
     where: { organizationId_name: { organizationId, name } },
   });
   if (existing && existing.id !== id) {
@@ -36,8 +37,8 @@ export async function PATCH(
   }
 
   try {
-    const location = await prisma.location.update({
-      where: { id, organizationId },
+    const location = await db.location.update({
+      where: { id },
       data: { name, address },
     });
     return NextResponse.json(location);
@@ -53,12 +54,12 @@ export async function DELETE(
   const session = await auth();
   const denied = requireAdmin(session);
   if (denied) return denied;
-  const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(session!.user.activeOrganizationId);
 
   const { id } = await params;
 
   try {
-    await prisma.location.delete({ where: { id, organizationId } });
+    await db.location.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Location not found" }, { status: 404 });

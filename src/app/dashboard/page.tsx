@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { scopedDb } from "@/lib/scoped-db";
 import {
   getMovementTrend,
   getStockValueCents,
@@ -13,6 +14,10 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 export default async function DashboardPage() {
+  const session = await auth();
+  const organizationId = session!.user.activeOrganizationId;
+  const db = scopedDb(organizationId);
+
   const [
     totalProducts,
     totalCategories,
@@ -22,18 +27,18 @@ export default async function DashboardPage() {
     movementTrend,
     stockValueCents,
   ] = await Promise.all([
-    prisma.product.count(),
-    prisma.category.count(),
-    prisma.location.count(),
-    prisma.product.findMany({
+    db.product.count(),
+    db.category.count(),
+    db.location.count(),
+    db.product.findMany({
       select: {
         reorderPoint: true,
         stockLevels: { select: { quantity: true } },
       },
     }),
-    getTopMovedProducts(30, 5),
-    getMovementTrend(TREND_DAYS),
-    getStockValueCents(),
+    getTopMovedProducts(organizationId, 30, 5),
+    getMovementTrend(organizationId, TREND_DAYS),
+    getStockValueCents(organizationId),
   ]);
 
   const lowStockCount = products.filter((product) => {
