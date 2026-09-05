@@ -42,7 +42,7 @@ export async function SiteNav() {
             <UserMenu
               name={session.user.name}
               email={session.user.email ?? ""}
-              role={session.user.role}
+              role={session.user.activeMembershipRole}
             />
           </>
         ) : (

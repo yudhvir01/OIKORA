@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { ADMIN_EQUIVALENT_ROLES } from "@/lib/team-roles";
 
 const PUBLIC_ROUTES = ["/login"];
 const ADMIN_ROUTE_PREFIX = "/admin";
@@ -23,7 +24,7 @@ export default auth((req) => {
   if (
     isLoggedIn &&
     pathname.startsWith(ADMIN_ROUTE_PREFIX) &&
-    req.auth?.user.role !== "ADMIN"
+    !ADMIN_EQUIVALENT_ROLES.has(req.auth!.user.activeMembershipRole)
   ) {
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }

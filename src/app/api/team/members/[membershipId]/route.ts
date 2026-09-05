@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-import { requireOrgAdmin } from "@/lib/team-authz";
 import { MEMBERSHIP_ROLES, wouldRemoveLastOwner } from "@/lib/team-roles";
 
 const MEMBER_INCLUDE = {
@@ -14,7 +14,7 @@ export async function PATCH(
   { params }: { params: Promise<{ membershipId: string }> },
 ) {
   const session = await auth();
-  const { denied } = await requireOrgAdmin(session);
+  const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
   const { membershipId } = await params;
@@ -57,7 +57,7 @@ export async function DELETE(
   { params }: { params: Promise<{ membershipId: string }> },
 ) {
   const session = await auth();
-  const { denied } = await requireOrgAdmin(session);
+  const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
   const { membershipId } = await params;

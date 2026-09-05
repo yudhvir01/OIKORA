@@ -119,7 +119,7 @@ into scheduled work instead of "fix it when it hurts."
       self-serve account creation/signup anywhere in this app yet for such
       an invite to lead into, so that's a real prerequisite gap, not a
       forgotten step of this item
-- [ ] Route protection updated everywhere `ADMIN`/`STAFF` was checked, now
+- [x] Route protection updated everywhere `ADMIN`/`STAFF` was checked, now
       checking the active membership's role instead of the old global
       `User.role`; `STOREKEEPER` gets the same operational permissions
       `STAFF` had (stock in/out/transfer, no destructive CRUD)

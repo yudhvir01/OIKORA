@@ -3,16 +3,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { TeamManager } from "@/components/team-manager";
 import { prisma } from "@/lib/prisma";
-import { TEAM_ADMIN_ROLES, type MembershipRoleValue } from "@/lib/team-roles";
+import { ADMIN_EQUIVALENT_ROLES, type MembershipRoleValue } from "@/lib/team-roles";
 
 export default async function TeamPage() {
   const session = await auth();
   const organizationId = session!.user.activeOrganizationId;
 
-  const membership = await prisma.membership.findUnique({
-    where: { userId_organizationId: { userId: session!.user.id, organizationId } },
-  });
-  if (!membership || !TEAM_ADMIN_ROLES.has(membership.role)) {
+  if (!ADMIN_EQUIVALENT_ROLES.has(session!.user.activeMembershipRole)) {
     redirect("/dashboard");
   }
 

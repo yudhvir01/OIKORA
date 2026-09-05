@@ -49,6 +49,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
           name: user.name,
           role: user.role,
           activeOrganizationId: membership.organizationId,
+          activeMembershipRole: membership.role,
         };
       },
     }),
@@ -59,13 +60,17 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         token.role = user.role;
         token.id = user.id as string;
         token.activeOrganizationId = user.activeOrganizationId;
+        token.activeMembershipRole = user.activeMembershipRole;
       }
 
       // Org switcher (Week 19): the client calls `unstable_update({ user:
       // { activeOrganizationId } })`, which re-invokes this callback with
       // trigger "update". Re-verify membership here rather than trusting
       // the caller -- this is the one place a forged/stale org id would
-      // otherwise get baked into a signed session token.
+      // otherwise get baked into a signed session token. Refreshing
+      // activeMembershipRole here too matters: route protection (Week 19)
+      // authorizes off this field, so switching orgs must switch the role
+      // that comes with it, not keep the previous org's.
       if (trigger === "update" && session?.user?.activeOrganizationId) {
         const membership = await prisma.membership.findUnique({
           where: {
@@ -77,6 +82,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         });
         if (membership) {
           token.activeOrganizationId = membership.organizationId;
+          token.activeMembershipRole = membership.role;
         }
       }
 
@@ -87,6 +93,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as "ADMIN" | "STAFF";
         session.user.activeOrganizationId = token.activeOrganizationId;
+        session.user.activeMembershipRole = token.activeMembershipRole;
       }
       return session;
     },

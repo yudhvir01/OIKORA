@@ -1,7 +1,12 @@
 export const MEMBERSHIP_ROLES = ["OWNER", "ADMIN", "STOREKEEPER", "STAFF"] as const;
 export type MembershipRoleValue = (typeof MEMBERSHIP_ROLES)[number];
 
-export const TEAM_ADMIN_ROLES = new Set<MembershipRoleValue>(["OWNER", "ADMIN"]);
+// Roles with admin-equivalent permissions for their organization: managing
+// the team, and (per the Week 19 route-protection migration) anything the
+// old global `ADMIN` role used to gate. `STOREKEEPER` and `STAFF` share the
+// same, non-destructive operational permissions (stock in/out/transfer) by
+// simply not being in this set.
+export const ADMIN_EQUIVALENT_ROLES = new Set<MembershipRoleValue>(["OWNER", "ADMIN"]);
 
 type MembershipLike = { id: string; role: MembershipRoleValue };
 

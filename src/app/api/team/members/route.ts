@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/authz";
 import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { requireOrgAdmin } from "@/lib/team-authz";
 import { MEMBERSHIP_ROLES } from "@/lib/team-roles";
 
 const MEMBER_INCLUDE = {
@@ -15,14 +15,10 @@ export async function GET() {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // A session's activeOrganizationId is only ever set to an org the user
+  // has a Membership in (see src/auth.ts), so being authenticated is
+  // sufficient here -- no separate membership check needed.
   const organizationId = session.user.activeOrganizationId;
-
-  const membership = await prisma.membership.findUnique({
-    where: { userId_organizationId: { userId: session.user.id, organizationId } },
-  });
-  if (!membership) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const members = await prisma.membership.findMany({
     where: { organizationId },
@@ -38,7 +34,7 @@ export async function GET() {
 // real, explicit gap (not this route's job to fill) rather than a stub.
 export async function POST(request: Request) {
   const session = await auth();
-  const { denied } = await requireOrgAdmin(session);
+  const denied = requireAdmin(session);
   if (denied) return denied;
   const organizationId = session!.user.activeOrganizationId;
 
