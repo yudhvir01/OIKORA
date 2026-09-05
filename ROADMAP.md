@@ -105,7 +105,7 @@ into scheduled work instead of "fix it when it hurts."
       than one org until Week 19's Team invite flow ships)
 
 ### Week 19 — Org switcher, RBAC & tenancy hardening
-- [ ] Org switcher in the nav (next to the account menu): lists every
+- [x] Org switcher in the nav (next to the account menu): lists every
       organization the signed-in user belongs to, switches
       `activeOrganizationId` on selection
 - [ ] Org-scoped "Team" admin panel (`/dashboard/team`, `OWNER`/`ADMIN`
