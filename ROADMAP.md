@@ -97,11 +97,12 @@ into scheduled work instead of "fix it when it hurts."
       manually scoped by `organizationId` today (correct, but relies on each
       route remembering to do it) — the extension is what makes that
       unforgettable.
-- [ ] Session/JWT extended with `activeOrganizationId` (done — pinned to the
+- [x] Session/JWT extended with `activeOrganizationId` (done — pinned to the
       user's earliest membership at login); a server action to switch it
-      (re-issues the session) for users in more than one org (not done — no
-      user can belong to more than one org yet, since Team invites are a
-      Week 19 item, so there's nothing to switch between)
+      (re-issues the session) for users in more than one org (done —
+      `switchActiveOrganization` re-verifies membership and calls
+      `unstable_update`; no nav UI yet, since no user can belong to more
+      than one org until Week 19's Team invite flow ships)
 
 ### Week 19 — Org switcher, RBAC & tenancy hardening
 - [ ] Org switcher in the nav (next to the account menu): lists every

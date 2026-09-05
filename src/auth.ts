@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -54,12 +54,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, trigger, session }) => {
       if (user) {
         token.role = user.role;
         token.id = user.id as string;
         token.activeOrganizationId = user.activeOrganizationId;
       }
+
+      // Org switcher (Week 19): the client calls `unstable_update({ user:
+      // { activeOrganizationId } })`, which re-invokes this callback with
+      // trigger "update". Re-verify membership here rather than trusting
+      // the caller -- this is the one place a forged/stale org id would
+      // otherwise get baked into a signed session token.
+      if (trigger === "update" && session?.user?.activeOrganizationId) {
+        const membership = await prisma.membership.findUnique({
+          where: {
+            userId_organizationId: {
+              userId: token.id,
+              organizationId: session.user.activeOrganizationId,
+            },
+          },
+        });
+        if (membership) {
+          token.activeOrganizationId = membership.organizationId;
+        }
+      }
+
       return token;
     },
     session: async ({ session, token }) => {
