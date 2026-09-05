@@ -111,7 +111,14 @@ into scheduled work instead of "fix it when it hurts."
 - [ ] Org-scoped "Team" admin panel (`/dashboard/team`, `OWNER`/`ADMIN`
       only): list members, invite by email (reuses `src/lib/email.ts`'s
       nodemailer-with-console-fallback pattern), change or revoke a
-      member's role
+      member's role -- **slice shipped**: listing, adding an *existing*
+      account by email (with a notification email), role changes, and
+      revocation are all done, with a last-owner guard so an org can never
+      end up with zero owners. What's still missing to check this off:
+      inviting someone with **no** OIKORA account yet -- there's no
+      self-serve account creation/signup anywhere in this app yet for such
+      an invite to lead into, so that's a real prerequisite gap, not a
+      forgotten step of this item
 - [ ] Route protection updated everywhere `ADMIN`/`STAFF` was checked, now
       checking the active membership's role instead of the old global
       `User.role`; `STOREKEEPER` gets the same operational permissions

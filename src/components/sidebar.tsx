@@ -16,6 +16,7 @@ const NAV_ITEMS = [
     label: "Reorder Suggestions",
     available: true,
   },
+  { href: "/dashboard/team", label: "Team", available: true },
 ] as const;
 
 function isActiveHref(pathname: string, href: string) {
