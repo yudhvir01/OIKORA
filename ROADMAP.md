@@ -98,11 +98,13 @@ into scheduled work instead of "fix it when it hurts."
       route remembering to do it) — the extension is what makes that
       unforgettable.
 - [x] Session/JWT extended with `activeOrganizationId` (done — pinned to the
-      user's earliest membership at login); a server action to switch it
-      (re-issues the session) for users in more than one org (done —
-      `switchActiveOrganization` re-verifies membership and calls
-      `unstable_update`; no nav UI yet, since no user can belong to more
-      than one org until Week 19's Team invite flow ships)
+      user's earliest membership at login) and `activeMembershipRole`
+      (added alongside it during the Week 19 route-protection migration); a
+      server action to switch it (re-issues the session) for users in more
+      than one org (done — `switchActiveOrganization` re-verifies
+      membership and calls `unstable_update`; the org switcher in the nav
+      calls it, though no user can belong to more than one org yet since
+      self-serve invites for brand-new accounts aren't built)
 
 ### Week 19 — Org switcher, RBAC & tenancy hardening
 - [x] Org switcher in the nav (next to the account menu): lists every
